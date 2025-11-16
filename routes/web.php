@@ -28,9 +28,24 @@ Route::middleware('auth')->group(function () {
     Route::get('/transaksi/masuk', [TransaksiController::class, 'create'])
         ->name('transaksi.masuk');
 
-    // Simpan transaksi
+    //  Simpan transaksi
     Route::post('/transaksi', [TransaksiController::class, 'store'])
         ->name('transaksi.store');
+    //  Laporan Transaksi (tabel + search)
+    Route::get('/transaksi', [TransaksiController::class, 'index'])
+        ->name('transaksi.index');
+
+    //  Input Transaksi
+    Route::get('/transaksi/masuk', [TransaksiController::class, 'create'])
+        ->name('transaksi.masuk');
+
+    //  Simpan Transaksi
+    Route::post('/transaksi', [TransaksiController::class, 'store'])
+        ->name('transaksi.store');
+
+    // Export PDF (mengikuti filter/search)
+    Route::get('/transaksi/export/pdf', [TransaksiController::class, 'exportPdf'])
+        ->name('transaksi.export.pdf');
 });
 Route::prefix('master-data')->name('master-data.')->middleware('auth')->group(function () {
     Route::prefix('kategori-produk')->name('kategori-produk.')->group(function () {

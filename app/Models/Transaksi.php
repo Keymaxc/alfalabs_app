@@ -23,4 +23,9 @@ class Transaksi extends Model
     {
         return $this->belongsTo(KategoriProduk::class, 'kategori_produk_id');
     }
+    public function kategoriProduk2()
+    {
+    return $this->belongsTo(KategoriProduk::class, 'kategori_produk_id');
+    }
+
 }
