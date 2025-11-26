@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Transaksi;
 use App\Models\KategoriProduk;
+use App\Models\PengerjaanTransaksi;
 use Illuminate\Http\Request;
-use Barryvdh\DomPDF\Facade\Pdf; // ⬅️ penting untuk export PDF
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class TransaksiController extends Controller
 {
@@ -23,7 +24,7 @@ class TransaksiController extends Controller
         ));
     }
 
-    // 🔹 SIMPAN TRANSAKSI
+    // 🔹 SIMPAN TRANSAKSI + AUTO BUAT PENGERJAAN
     public function store(Request $request)
     {
         $validated = $request->validate(
@@ -54,12 +55,13 @@ class TransaksiController extends Controller
             ]
         );
 
+        // Ambil kategori & harga
         $kategori = KategoriProduk::findOrFail($validated['kategori_produk_id']);
 
         // Hitung total harga
         $validated['total_harga'] = $kategori->harga * $validated['jumlah'];
 
-        // Hitung pelunasan
+        // Hitung pelunasan = total - deposit (minimal 0)
         $deposit   = $validated['deposit'] ?? 0;
         $pelunasan = $validated['total_harga'] - $deposit;
         if ($pelunasan < 0) {
@@ -67,11 +69,19 @@ class TransaksiController extends Controller
         }
         $validated['pelunasan'] = $pelunasan;
 
-        Transaksi::create($validated);
+        // ✅ SIMPAN TRANSAKSI — HANYA SEKALI
+        $transaksi = Transaksi::create($validated);
+
+        // ✅ OTOMATIS BUAT DATA PENGERJAAN (status menunggu)
+        PengerjaanTransaksi::create([
+            'transaksi_id' => $transaksi->id,
+            'status'       => 'menunggu',
+            'catatan'      => null,
+        ]);
 
         return redirect()
             ->route('transaksi.masuk')
-            ->with('success', 'Transaksi berhasil disimpan!');
+            ->with('success', 'Transaksi berhasil disimpan dan masuk ke daftar pengerjaan!');
     }
 
     // 🔹 LAPORAN TRANSAKSI (TABEL + SEARCH)
@@ -94,11 +104,10 @@ class TransaksiController extends Controller
 
         $transaksis = $query->paginate(10)->appends(['q' => $search]);
 
-        // ⬅️ PENTING: ini sekarang pakai view laporan, BUKAN form
         return view('transaksi.index', compact('pageTitle', 'transaksis', 'search'));
     }
 
-    // 🔹 EXPORT PDF (IKUTI FILTER/SEARCH)
+    // 🔹 EXPORT PDF (IKUT SEARCH)
     public function exportPdf(Request $request)
     {
         $pageTitle = 'Laporan Transaksi Masuk';
@@ -119,12 +128,12 @@ class TransaksiController extends Controller
         $transaksis = $query->get();
 
         $pdf = Pdf::loadView('transaksi.laporan_pdf', compact('transaksis', 'pageTitle', 'search'))
-                  ->setPaper('a4', 'portrait');
+            ->setPaper('a4', 'portrait');
 
         $filename = 'laporan_transaksi_' . now()->format('Ymd_His') . '.pdf';
 
         return $pdf->download($filename);
-        // atau stream:
+        // atau:
         // return $pdf->stream($filename);
     }
 }

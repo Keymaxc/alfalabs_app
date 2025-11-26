@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\KategoriProdukController;
 use App\Http\Controllers\TransaksiController;
+use App\Http\Controllers\PengerjaanTransaksiController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -46,6 +47,15 @@ Route::middleware('auth')->group(function () {
     // Export PDF (mengikuti filter/search)
     Route::get('/transaksi/export/pdf', [TransaksiController::class, 'exportPdf'])
         ->name('transaksi.export.pdf');
+    // Halaman Pengerjaan Transaksi
+    Route::get('/pengerjaan', [PengerjaanTransaksiController::class, 'indexBerjalan'])
+        ->name('pengerjaan.berjalan');
+
+    Route::get('/pengerjaan/selesai', [PengerjaanTransaksiController::class, 'indexSelesai'])
+        ->name('pengerjaan.selesai');
+
+    Route::put('/pengerjaan/{pengerjaan}', [PengerjaanTransaksiController::class, 'update'])
+        ->name('pengerjaan.update');
 });
 Route::prefix('master-data')->name('master-data.')->middleware('auth')->group(function () {
     Route::prefix('kategori-produk')->name('kategori-produk.')->group(function () {

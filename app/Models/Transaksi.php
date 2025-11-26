@@ -25,7 +25,10 @@ class Transaksi extends Model
     }
     public function kategoriProduk2()
     {
-    return $this->belongsTo(KategoriProduk::class, 'kategori_produk_id');
+        return $this->belongsTo(KategoriProduk::class, 'kategori_produk_id');
     }
-
+    public function pengerjaan()
+    {
+        return $this->hasOne(PengerjaanTransaksi::class);
+    }
 }

@@ -54,6 +54,23 @@ class sidebar extends Component
                     ],
                 ],
             ],
+            [
+                'label'      => 'Pengerjaan',
+                'route'      => '#',
+                'is_active'  => request()->routeIs('pengerjaan.*'),
+                'icon'       => 'fas fa-tasks',
+                'is_dropdown'=> true,
+                'item'       => [
+                    [
+                        'label' => 'Pengerjaan Berjalan',
+                        'route' => 'pengerjaan.berjalan',
+                    ],
+                    [
+                        'label' => 'Pengerjaan Selesai',
+                        'route' => 'pengerjaan.selesai',
+                    ],
+                ],
+            ],
         ];
     }
 

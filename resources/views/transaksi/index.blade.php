@@ -2,7 +2,6 @@
 @section('title', $pageTitle)
 
 @section('content')
-    {{-- Khusus kecilin font isi tabel transaksi, nggak ngaruh ke navbar / lainnya --}}
     <style>
         #tabel-transaksi tbody td {
             font-size: 0.85rem;
@@ -148,7 +147,7 @@
             if (!searchInput || !formSearch) return;
 
             let typingTimer;
-            const doneTypingInterval = 500; // jeda 0.5 detik setelah berhenti ngetik
+            const doneTypingInterval = 500; 
 
             // Saat mengetik
             searchInput.addEventListener('input', function () {
