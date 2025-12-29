@@ -1,6 +1,6 @@
 @extends('layouts.dashboard')
 
-@section('title', $pageTitle ?? 'Transaksi Stok Masuk')
+@section('title', $pageTitle ?? 'Input Stok Masuk')
 
 @section('content')
     <style>
@@ -23,9 +23,14 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="card-title mb-0">Transaksi Stok Masuk</h4>
-            <a href="{{ route('transaksi.index') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                <i class="fas fa-list me-1"></i> Laporan Transaksi
-            </a>
+            <div class="d-flex gap-2">
+                <a href="{{ route('transaksi.stok-masuk.laporan') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                    <i class="fas fa-boxes-stacked me-1"></i> Laporan Stok Masuk
+                </a>
+                <a href="{{ route('transaksi.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                    <i class="fas fa-list me-1"></i> Laporan Transaksi
+                </a>
+            </div>
         </div>
 
         <div class="card-body py-4 form-transaksi-wrapper">
@@ -77,7 +82,7 @@
 
                 <h6 class="fw-bold text-uppercase text-muted mb-3">Detail Barang</h6>
                 <div class="row g-3 mb-4">
-                    <div class="col-md-6">
+                    <div class="col-md-7">
                         <label for="kategori_produk_id" class="form-label fw-semibold">Kategori Barang</label>
                         <select
                             name="kategori_produk_id"
@@ -89,11 +94,10 @@
                             @foreach ($kategoriProduks as $kategori)
                                 <option
                                     value="{{ $kategori->id }}"
-                                    data-harga="{{ $kategori->harga }}"
                                     data-stok="{{ $kategori->stok }}"
                                     {{ old('kategori_produk_id') == $kategori->id ? 'selected' : '' }}
                                 >
-                                    {{ $kategori->nama_kategori }}
+                                    {{ $kategori->nama_kategori }} (Stok: {{ number_format($kategori->stok, 0, ',', '.') }})
                                 </option>
                             @endforeach
                         </select>
@@ -101,11 +105,14 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-5">
                         <label for="stok_saat_ini" class="form-label fw-semibold">Stok Saat Ini</label>
                         <input type="text" id="stok_saat_ini" class="form-control" value="0" readonly>
                     </div>
-                    <div class="col-md-3">
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
                         <label for="jumlah" class="form-label fw-semibold">Jumlah Masuk</label>
                         <input
                             type="number"
@@ -120,17 +127,25 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                </div>
-
-                <div class="row g-3 mb-4">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label for="harga_satuan" class="form-label fw-semibold">Harga Satuan</label>
                         <div class="input-group">
                             <span class="input-group-text">Rp</span>
-                            <input type="text" id="harga_satuan" class="form-control" value="0" readonly>
+                            <input
+                                type="number"
+                                name="harga_satuan"
+                                id="harga_satuan"
+                                class="form-control @error('harga_satuan') is-invalid @enderror"
+                                value="{{ old('harga_satuan', 0) }}"
+                                min="0"
+                                required
+                            >
                         </div>
+                        @error('harga_satuan')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label for="total_harga_display" class="form-label fw-semibold">Estimasi Total</label>
                         <div class="input-group">
                             <span class="input-group-text">Rp</span>
@@ -203,23 +218,22 @@
     function updateStokMasuk() {
         const kategoriSelect = document.getElementById('kategori_produk_id');
         const jumlahInput = document.getElementById('jumlah');
-        const hargaDisplay = document.getElementById('harga_satuan');
+        const hargaInput = document.getElementById('harga_satuan');
         const stokDisplay = document.getElementById('stok_saat_ini');
         const totalDisplay = document.getElementById('total_harga_display');
         const totalHidden = document.getElementById('total_harga');
 
-        if (!kategoriSelect || !jumlahInput || !hargaDisplay || !stokDisplay || !totalDisplay || !totalHidden) {
+        if (!kategoriSelect || !jumlahInput || !hargaInput || !stokDisplay || !totalDisplay || !totalHidden) {
             return;
         }
 
         const selectedOption = kategoriSelect.options[kategoriSelect.selectedIndex] || null;
-        const harga = selectedOption ? Number(selectedOption.getAttribute('data-harga') || 0) : 0;
         const stok = selectedOption ? Number(selectedOption.getAttribute('data-stok') || 0) : 0;
+        const harga = Number(hargaInput.value || 0);
         const jumlah = Number(jumlahInput.value || 0);
 
         const total = harga * (jumlah > 0 ? jumlah : 0);
 
-        hargaDisplay.value = formatRupiah(harga);
         stokDisplay.value = formatRupiah(stok);
         totalDisplay.value = formatRupiah(total);
         totalHidden.value = total;
@@ -228,12 +242,16 @@
     document.addEventListener('DOMContentLoaded', function () {
         const kategoriSelect = document.getElementById('kategori_produk_id');
         const jumlahInput = document.getElementById('jumlah');
+        const hargaInput = document.getElementById('harga_satuan');
 
         if (kategoriSelect) {
             kategoriSelect.addEventListener('change', updateStokMasuk);
         }
         if (jumlahInput) {
             jumlahInput.addEventListener('input', updateStokMasuk);
+        }
+        if (hargaInput) {
+            hargaInput.addEventListener('input', updateStokMasuk);
         }
 
         updateStokMasuk();

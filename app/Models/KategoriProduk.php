@@ -17,4 +17,8 @@ class KategoriProduk extends Model
         'stok',
         'stok_minimum',
     ];
+
+    protected $attributes = [
+        'stok_minimum' => 50,
+    ];
 }

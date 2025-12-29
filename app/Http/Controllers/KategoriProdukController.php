@@ -22,8 +22,8 @@ class KategoriProdukController extends Controller
         KategoriProduk::create([
             'nama_kategori' => $request->nama_kategori,
             'harga' => $request->harga,
-            'stok' => $request->stok,
-            'stok_minimum' => $request->stok_minimum,
+            'stok' => $request->stok ?? 0,
+            'stok_minimum' => 50,
         ]);
 
         return redirect()->route('master-data.kategori-produk.index')
@@ -36,8 +36,8 @@ class KategoriProdukController extends Controller
         $kategori->update([
             'nama_kategori' => $request->nama_kategori,
             'harga' => $request->harga,
-            'stok' => $request->stok,
-            'stok_minimum' => $request->stok_minimum,
+            'stok' => $request->stok ?? $kategori->stok,
+            'stok_minimum' => 50,
         ]);
 
         return redirect()->route('master-data.kategori-produk.index')

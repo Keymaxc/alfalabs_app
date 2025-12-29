@@ -17,7 +17,7 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 Route::middleware('auth')->group(function () {
 
-    Route::prefix('master-data')->name('master-data.')->middleware('role:admin')->group(function () {
+    Route::prefix('master-data')->name('master-data.')->middleware('role:admin,staff')->group(function () {
         Route::resource('kategori-produk', KategoriProdukController::class);
     });
 
@@ -34,6 +34,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/transaksi', [TransaksiController::class, 'store'])
             ->name('transaksi.store');
 
+        // Struk transaksi penjualan
+        Route::get('/transaksi/{transaksi}/struk', [TransaksiController::class, 'strukPdf'])
+            ->name('transaksi.struk.pdf');
+
         // Form stok masuk
         Route::get('/transaksi/stok-masuk', [TransaksiController::class, 'createStokMasuk'])
             ->name('transaksi.stok-masuk');
@@ -42,9 +46,15 @@ Route::middleware('auth')->group(function () {
         Route::post('/transaksi/stok-masuk', [TransaksiController::class, 'storeStokMasuk'])
             ->name('transaksi.stok-masuk.store');
 
+        // Laporan stok masuk
+        Route::get('/transaksi/laporan/stok-masuk', [TransaksiController::class, 'stokMasukReport'])
+            ->name('transaksi.stok-masuk.laporan');
+
         // Export PDF (mengikuti filter/search)
         Route::get('/transaksi/export/pdf', [TransaksiController::class, 'exportPdf'])
             ->name('transaksi.export.pdf');
+        Route::get('/transaksi/export/pdf/stok-masuk', [TransaksiController::class, 'exportStokMasukPdf'])
+            ->name('transaksi.stok-masuk.export.pdf');
     });
 
     Route::middleware('role:admin,staff')->group(function () {
@@ -57,5 +67,9 @@ Route::middleware('auth')->group(function () {
 
         Route::put('/pengerjaan/{pengerjaan}', [PengerjaanTransaksiController::class, 'update'])
             ->name('pengerjaan.update');
+
+        // Pelunasan transaksi
+        Route::post('/pengerjaan/{transaksi}/pelunasan', [PengerjaanTransaksiController::class, 'pelunasan'])
+            ->name('pengerjaan.pelunasan');
     });
 });

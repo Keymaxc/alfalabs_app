@@ -36,6 +36,9 @@
                 {{-- Form Search (auto search saat ngetik) --}}
                 <form id="form-search-transaksi" action="{{ route('transaksi.index') }}" method="GET"
                       class="d-flex flex-grow-1">
+                    @if(($deadline ?? null)==='soon')
+                        <input type="hidden" name="deadline" value="soon">
+                    @endif
                     <input
                         type="text"
                         name="q"
@@ -57,6 +60,10 @@
                        class="btn btn-outline-primary rounded-pill px-3">
                         <i class="fas fa-boxes-stacked me-1"></i> Stok Masuk
                     </a>
+                    <a href="{{ route('transaksi.stok-masuk.laporan') }}"
+                       class="btn btn-outline-secondary rounded-pill px-3">
+                        <i class="fas fa-table me-1"></i> Laporan Stok Masuk
+                    </a>
                     <a href="{{ route('transaksi.export.pdf', ['q' => request('q')]) }}"
                        class="btn btn-outline-danger rounded-pill px-3"
                        target="_blank">
@@ -66,9 +73,14 @@
             </div>
 
             {{-- Info filter kalau ada search --}}
-            @if (request('q'))
+            @if (request('q') || ($deadline ?? null) === 'soon')
                 <p class="text-muted mb-2">
-                    Hasil pencarian untuk: <strong>"{{ request('q') }}"</strong>
+                    @if(request('q'))
+                        Hasil pencarian untuk: <strong>"{{ request('q') }}"</strong>
+                    @endif
+                    @if(($deadline ?? null) === 'soon')
+                        <span class="badge bg-warning text-dark ms-2">Filter: Deadline ≤ 2 hari</span>
+                    @endif
                 </p>
             @endif
 
@@ -79,10 +91,10 @@
                         <tr>
                             <th class="text-center" style="width: 40px">No</th>
                             <th>Nomor Transaksi</th>
-                            <th>Jenis</th>
                             <th>Kategori</th>
                             <th>Nama Pelanggan</th>
                             <th class="text-end">Jumlah</th>
+                            <th>Deadline</th>
                             <th>Keterangan</th>
                             <th class="text-end">Total</th>
                             <th class="text-end">Deposit</th>
@@ -98,10 +110,25 @@
                                     {{ $loop->iteration + ($transaksis->currentPage() - 1) * $transaksis->perPage() }}
                                 </td>
                                 <td>{{ $trx->nomor_transaksi }}</td>
-                                <td class="text-capitalize">{{ $trx->jenis_transaksi }}</td>
                                 <td>{{ $trx->kategoriProduk->nama_kategori ?? '-' }}</td>
                                 <td>{{ $trx->nama_pelanggan ?? '-' }}</td>
                                 <td class="text-end">{{ number_format($trx->jumlah, 0, ',', '.') }}</td>
+                                <td>
+                                    @if($trx->deadline_at)
+                                        <span class="badge bg-light text-dark border">
+                                            {{ $trx->deadline_at->format('d/m/Y') }}
+                                        </span>
+                                        @if($trx->deadline_at->isToday())
+                                            <span class="badge bg-warning text-dark">Hari ini</span>
+                                        @elseif($trx->deadline_at->isTomorrow())
+                                            <span class="badge bg-warning text-dark">Besok</span>
+                                        @elseif($trx->deadline_at->isPast())
+                                            <span class="badge bg-danger">Lewat</span>
+                                        @endif
+                                    @else
+                                        -
+                                    @endif
+                                </td>
                                 <td>{{ $trx->keterangan ?? '-' }}</td>
                                 <td class="text-end">Rp {{ number_format($trx->total_harga, 0, ',', '.') }}</td>
                                 <td class="text-end">Rp {{ number_format($trx->deposit, 0, ',', '.') }}</td>
@@ -110,7 +137,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="11" class="text-center">Belum ada transaksi.</td>
+                                <td colspan="12" class="text-center">Belum ada transaksi.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -119,7 +146,7 @@
 
             {{-- 🔹 Pagination --}}
             <div class="mt-3">
-                {{ $transaksis->links() }}
+                {{ $transaksis->onEachSide(1)->links('pagination::bootstrap-5') }}
             </div>
         </div>
     </div>
@@ -175,3 +202,4 @@
         });
     </script>
 @endpush
+

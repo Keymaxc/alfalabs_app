@@ -1,6 +1,6 @@
 @extends('layouts.dashboard')
 
-@section('title', $pageTitle ?? 'Transaksi Masuk')
+@section('title', $pageTitle ?? 'Input Penjualan')
 
 @section('content')
     {{-- Styling khusus form transaksi, nggak ngaruh ke halaman lain --}}
@@ -81,6 +81,23 @@
                             readonly
                         >
                         <input type="hidden" name="jenis_transaksi" value="pemasukan">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="deadline_at" class="form-label fw-semibold">Deadline Pengerjaan</label>
+                        <input
+                            type="date"
+                            name="deadline_at"
+                            id="deadline_at"
+                            class="form-control @error('deadline_at') is-invalid @enderror"
+                            value="{{ old('deadline_at') }}"
+                            min="{{ now()->format('Y-m-d') }}"
+                            required
+                        >
+                        <div class="form-text">Wajib diisi, gunakan tanggal hari ini atau setelahnya.</div>
+                        @error('deadline_at')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
 
@@ -301,7 +318,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     // Notifikasi SweetAlert
-    @if (session('success'))
+    @if (session('success') && !session('struk_url'))
         Swal.fire({
             icon: 'success',
             title: 'Berhasil!',
@@ -316,6 +333,25 @@
             icon: 'error',
             title: 'Oops...',
             html: `{!! implode('<br>', $errors->all()) !!}`,
+        });
+    @endif
+
+    // Pop-up tawarkan cetak struk
+    @if (session('struk_url'))
+        document.addEventListener('DOMContentLoaded', function () {
+            const url = @json(session('struk_url'));
+            Swal.fire({
+                icon: 'success',
+                title: 'Transaksi berhasil ditambahkan',
+                text: 'Ingin mencetak struk sekarang?',
+                showCancelButton: true,
+                confirmButtonText: 'Cetak Struk',
+                cancelButtonText: 'Nanti Saja',
+            }).then((result) => {
+                if (result.isConfirmed && url) {
+                    window.open(url, '_blank');
+                }
+            });
         });
     @endif
 

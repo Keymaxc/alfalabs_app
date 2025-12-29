@@ -1,0 +1,32 @@
+﻿@startuml
+skinparam ArrowColor Black
+skinparam defaultTextAlignment center
+
+start
+:Mulai;
+
+if (Jenis transaksi?) then (Pemasukan)
+  :Input transaksi masuk\n(nomor, kategori, jumlah,\ncustomer, deposit, deadline opsional);
+  :Hitung total_harga = harga_jual * jumlah\npelunasan = total_harga - deposit;
+  :Kurangi stok barang;
+  :Simpan transaksis (jenis = pemasukan);
+  :Buat pengerjaan_transaksis\nstatus = "menunggu";
+else (Pengeluaran/Stok Masuk)
+  :Input stok masuk\n(nomor STK, kategori, jumlah, harga beli);
+  :Hitung total_harga = harga_beli * jumlah;
+  :Simpan transaksis (jenis = pengeluaran);
+  :Tambah stok barang;
+endif
+
+if (Update status pengerjaan?) then (Ya)
+  :Ubah status pengerjaan\nmenunggu → proses → selesai → diambil\n+ simpan catatan;
+endif
+
+if (Pelunasan?) then (Ya)
+  :Input pelunasan (jika ada sisa bayar);
+  :Update pelunasan di transaksis;
+endif
+
+:SELESAI;
+stop
+@enduml

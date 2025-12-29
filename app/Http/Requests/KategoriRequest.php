@@ -18,8 +18,8 @@ class KategoriRequest extends FormRequest
         return [
             'nama_kategori' => 'required|string|max:255|unique:kategori_produks,nama_kategori,' . $id,
             'harga' => 'required|numeric|min:0',
-            'stok' => 'required|integer|min:0',
-            'stok_minimum' => 'required|integer|min:0',
+            'stok' => 'nullable|integer|min:0',
+            'stok_minimum' => 'nullable|integer|min:0',
         ];
     }
 

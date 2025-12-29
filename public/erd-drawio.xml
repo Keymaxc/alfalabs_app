@@ -1,0 +1,84 @@
+﻿<mxfile host="app.diagrams.net">
+  <diagram name="ERD Dark">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- users -->
+        <mxCell id="users" value="&lt;table style='width:320px;font-size:12px;color:#f8fafc;background:#111827;'&gt;
+          &lt;tr&gt;&lt;th colspan='2' style='background:#0f172a;color:#f8fafc;padding:6px;font-weight:bold;border-bottom:1px solid #f8fafc;'&gt;users&lt;/th&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td style='width:50px;padding:4px;font-weight:bold;'&gt;PK&lt;/td&gt;&lt;td style='padding:4px;text-decoration:underline;'&gt;id BIGINT UNSIGNED NOT NULL&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;name VARCHAR(255) NOT NULL&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;email VARCHAR(255) UNIQUE NOT NULL&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;email_verified_at TIMESTAMP&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;password VARCHAR(255) NOT NULL&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;role VARCHAR(255) NOT NULL&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;remember_token VARCHAR(100)&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;created_at TIMESTAMP&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;updated_at TIMESTAMP&lt;/td&gt;&lt;/tr&gt;
+        &lt;/table&gt;" style="shape=table;html=1;whiteSpace=wrap;verticalAlign=top;strokeColor=#f8fafc;rounded=0;fillColor=#111827;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="320" height="260" as="geometry"/>
+        </mxCell>
+
+        <!-- kategori_produks -->
+        <mxCell id="kategori" value="&lt;table style='width:320px;font-size:12px;color:#f8fafc;background:#111827;'&gt;
+          &lt;tr&gt;&lt;th colspan='2' style='background:#0f172a;color:#f8fafc;padding:6px;font-weight:bold;border-bottom:1px solid #f8fafc;'&gt;kategori_produks&lt;/th&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td style='width:50px;padding:4px;font-weight:bold;'&gt;PK&lt;/td&gt;&lt;td style='padding:4px;text-decoration:underline;'&gt;id BIGINT UNSIGNED NOT NULL&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;nama_kategori VARCHAR(255) NOT NULL&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;harga DECIMAL(15,2) NOT NULL&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;stok INT DEFAULT 0&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;stok_minimum INT DEFAULT 0&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;created_at TIMESTAMP&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;updated_at TIMESTAMP&lt;/td&gt;&lt;/tr&gt;
+        &lt;/table&gt;" style="shape=table;html=1;whiteSpace=wrap;verticalAlign=top;strokeColor=#f8fafc;rounded=0;fillColor=#111827;" vertex="1" parent="1">
+          <mxGeometry x="420" y="40" width="320" height="230" as="geometry"/>
+        </mxCell>
+
+        <!-- transaksis -->
+        <mxCell id="transaksis" value="&lt;table style='width:360px;font-size:12px;color:#f8fafc;background:#111827;'&gt;
+          &lt;tr&gt;&lt;th colspan='2' style='background:#0f172a;color:#f8fafc;padding:6px;font-weight:bold;border-bottom:1px solid #f8fafc;'&gt;transaksis&lt;/th&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td style='width:50px;padding:4px;font-weight:bold;'&gt;PK&lt;/td&gt;&lt;td style='padding:4px;text-decoration:underline;'&gt;id BIGINT UNSIGNED NOT NULL&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td style='width:50px;padding:4px;font-weight:bold;'&gt;FK1&lt;/td&gt;&lt;td style='padding:4px;text-decoration:underline;'&gt;kategori_produk_id BIGINT UNSIGNED NOT NULL&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;nomor_transaksi VARCHAR(255) NOT NULL&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;jenis_transaksi ENUM(pemasukan,pengeluaran) NOT NULL&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;jumlah INT NOT NULL&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;total_harga INT NOT NULL&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;deposit INT DEFAULT 0&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;pelunasan INT DEFAULT 0&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;deadline_at DATETIME&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;nama_pelanggan VARCHAR(255)&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;kontak_pelanggan VARCHAR(255)&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;keterangan TEXT&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;created_at TIMESTAMP&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;updated_at TIMESTAMP&lt;/td&gt;&lt;/tr&gt;
+        &lt;/table&gt;" style="shape=table;html=1;whiteSpace=wrap;verticalAlign=top;strokeColor=#f8fafc;rounded=0;fillColor=#111827;" vertex="1" parent="1">
+          <mxGeometry x="420" y="320" width="360" height="360" as="geometry"/>
+        </mxCell>
+
+        <!-- pengerjaan_transaksis -->
+        <mxCell id="pengerjaan" value="&lt;table style='width:320px;font-size:12px;color:#f8fafc;background:#111827;'&gt;
+          &lt;tr&gt;&lt;th colspan='2' style='background:#0f172a;color:#f8fafc;padding:6px;font-weight:bold;border-bottom:1px solid #f8fafc;'&gt;pengerjaan_transaksis&lt;/th&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td style='width:50px;padding:4px;font-weight:bold;'&gt;PK&lt;/td&gt;&lt;td style='padding:4px;text-decoration:underline;'&gt;id BIGINT UNSIGNED NOT NULL&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td style='width:50px;padding:4px;font-weight:bold;'&gt;FK1&lt;/td&gt;&lt;td style='padding:4px;text-decoration:underline;'&gt;transaksi_id BIGINT UNSIGNED NOT NULL&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;status ENUM(menunggu,proses,selesai,diambil) NOT NULL&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;catatan TEXT&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;created_at TIMESTAMP&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td/&gt;&lt;td style='padding:4px;'&gt;updated_at TIMESTAMP&lt;/td&gt;&lt;/tr&gt;
+        &lt;/table&gt;" style="shape=table;html=1;whiteSpace=wrap;verticalAlign=top;strokeColor=#f8fafc;rounded=0;fillColor=#111827;" vertex="1" parent="1">
+          <mxGeometry x="820" y="360" width="320" height="240" as="geometry"/>
+        </mxCell>
+
+        <!-- Edges -->
+        <mxCell id="edge1" value="FK1" style="endArrow=block;endFill=1;html=1;fontSize=11;strokeColor=#f8fafc;" edge="1" parent="1" source="kategori" target="transaksis">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="edge2" value="FK1" style="endArrow=block;endFill=1;html=1;fontSize=11;strokeColor=#f8fafc;" edge="1" parent="1" source="transaksis" target="pengerjaan">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

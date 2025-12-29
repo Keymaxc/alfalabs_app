@@ -109,7 +109,7 @@
                             <th>Kategori</th>
                             <th class="text-center">Status</th>
                             <th>Catatan</th>
-                            <th style="width: 150px;">Tanggal</th>
+                            <th style="width: 150px;">Deadline</th>
                             <th class="text-center" style="width: 90px">Aksi</th>
                         </tr>
                     </thead>
@@ -142,7 +142,15 @@
                                     </span>
                                 </td>
                                 <td style="font-size: 0.8rem;">
-                                    {{ $item->created_at->format('d/m/Y H:i') }}
+                                    @php $deadline = $trx?->deadline_at; @endphp
+                                    @if($deadline)
+                                        <div>{{ $deadline->format('d/m/Y') }}</div>
+                                        <div class="small text-muted">
+                                            {{ $deadline->diffForHumans(now(), ['parts' => 2, 'short' => true]) }}
+                                        </div>
+                                    @else
+                                        -
+                                    @endif
                                 </td>
                                 <td class="text-center">
                                     <button
@@ -186,10 +194,6 @@
                                                         <option value="selesai"
                                                             {{ $item->status == 'selesai' ? 'selected' : '' }}>
                                                             Selesai
-                                                        </option>
-                                                        <option value="diambil"
-                                                            {{ $item->status == 'diambil' ? 'selected' : '' }}>
-                                                            Diambil
                                                         </option>
                                                     </select>
                                                 </div>

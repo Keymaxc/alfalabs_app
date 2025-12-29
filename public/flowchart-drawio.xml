@@ -1,0 +1,112 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Flowchart">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Nodes -->
+        <mxCell id="start" value="Mulai" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#059669;" vertex="1" parent="1">
+          <mxGeometry x="140" y="60" width="140" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="decJenis" value="Jenis transaksi?" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#2563eb;fillColor=#eff6ff;" vertex="1" parent="1">
+          <mxGeometry x="140" y="140" width="180" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="inPemasukan" value="Input transaksi masuk&#xa;(nomor, kategori, jumlah,&#xa;customer, deposit, deadline)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef2ff;strokeColor=#4f46e5;" vertex="1" parent="1">
+          <mxGeometry x="40" y="250" width="220" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="calcJual" value="Hitung total_harga = harga_jual * jumlah&#xa;pelunasan = total - deposit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e0f2fe;strokeColor=#0284c7;" vertex="1" parent="1">
+          <mxGeometry x="40" y="360" width="220" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="stokKurang" value="Kurangi stok" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef9c3;strokeColor=#ca8a04;" vertex="1" parent="1">
+          <mxGeometry x="40" y="460" width="220" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="saveJual" value="Simpan transaksis&#xa;(jenis=pemasukan)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e5e7eb;strokeColor=#4b5563;" vertex="1" parent="1">
+          <mxGeometry x="40" y="540" width="220" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="createPengerjaan" value="Buat pengerjaan_transaksis&#xa;status = menunggu" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#475569;" vertex="1" parent="1">
+          <mxGeometry x="40" y="620" width="220" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="inBeli" value="Input stok masuk&#xa;(nomor STK, kategori, jumlah, harga beli)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef2ff;strokeColor=#4f46e5;" vertex="1" parent="1">
+          <mxGeometry x="320" y="250" width="220" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="calcBeli" value="Hitung total_harga&#xa;= harga_beli * jumlah" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e0f2fe;strokeColor=#0284c7;" vertex="1" parent="1">
+          <mxGeometry x="320" y="360" width="220" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="saveBeli" value="Simpan transaksis&#xa;(jenis=pengeluaran)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e5e7eb;strokeColor=#4b5563;" vertex="1" parent="1">
+          <mxGeometry x="320" y="460" width="220" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="stokTambah" value="Tambah stok" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef9c3;strokeColor=#ca8a04;" vertex="1" parent="1">
+          <mxGeometry x="320" y="540" width="220" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="decStatus" value="Update status pengerjaan?" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#2563eb;fillColor=#eff6ff;" vertex="1" parent="1">
+          <mxGeometry x="600" y="260" width="200" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="updateStatus" value="Ubah status&#xa;menunggu→proses→selesai→diambil&#xa;+ catatan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="580" y="370" width="240" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="decPelunasan" value="Pelunasan?" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#2563eb;fillColor=#eff6ff;" vertex="1" parent="1">
+          <mxGeometry x="900" y="260" width="160" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="doPelunasan" value="Input pelunasan sisa&#xa;Update pelunasan di transaksis" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#475569;" vertex="1" parent="1">
+          <mxGeometry x="860" y="360" width="240" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="end" value="Selesai" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#059669;" vertex="1" parent="1">
+          <mxGeometry x="920" y="500" width="140" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Edges -->
+        <mxCell id="e1" style="endArrow=block;endFill=1;strokeColor=#4b5563;" edge="1" parent="1" source="start" target="decJenis">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e2" value="Ya" style="endArrow=block;endFill=1;strokeColor=#4b5563;fontSize=11;" edge="1" parent="1" source="decJenis" target="inPemasukan">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-70" y="-20" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="e3" value="Tidak" style="endArrow=block;endFill=1;strokeColor=#4b5563;fontSize=11;" edge="1" parent="1" source="decJenis" target="inBeli">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="70" y="-20" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="e4" style="endArrow=block;endFill=1;strokeColor=#4b5563;" edge="1" parent="1" source="inPemasukan" target="calcJual"/>
+        <mxCell id="e5" style="endArrow=block;endFill=1;strokeColor=#4b5563;" edge="1" parent="1" source="calcJual" target="stokKurang"/>
+        <mxCell id="e6" style="endArrow=block;endFill=1;strokeColor=#4b5563;" edge="1" parent="1" source="stokKurang" target="saveJual"/>
+        <mxCell id="e7" style="endArrow=block;endFill=1;strokeColor=#4b5563;" edge="1" parent="1" source="saveJual" target="createPengerjaan"/>
+        <mxCell id="e8" style="endArrow=block;endFill=1;strokeColor=#4b5563;" edge="1" parent="1" source="createPengerjaan" target="decStatus"/>
+
+        <mxCell id="e9" style="endArrow=block;endFill=1;strokeColor=#4b5563;" edge="1" parent="1" source="inBeli" target="calcBeli"/>
+        <mxCell id="e10" style="endArrow=block;endFill=1;strokeColor=#4b5563;" edge="1" parent="1" source="calcBeli" target="saveBeli"/>
+        <mxCell id="e11" style="endArrow=block;endFill=1;strokeColor=#4b5563;" edge="1" parent="1" source="saveBeli" target="stokTambah"/>
+        <mxCell id="e12" style="endArrow=block;endFill=1;strokeColor=#4b5563;" edge="1" parent="1" source="stokTambah" target="decStatus"/>
+
+        <mxCell id="e13" value="Ya" style="endArrow=block;endFill=1;strokeColor=#4b5563;fontSize=11;" edge="1" parent="1" source="decStatus" target="updateStatus"/>
+        <mxCell id="e14" value="Tidak" style="endArrow=block;endFill=1;strokeColor=#4b5563;fontSize=11;" edge="1" parent="1" source="decStatus" target="decPelunasan"/>
+        <mxCell id="e15" style="endArrow=block;endFill=1;strokeColor=#4b5563;" edge="1" parent="1" source="updateStatus" target="decPelunasan"/>
+
+        <mxCell id="e16" value="Ya" style="endArrow=block;endFill=1;strokeColor=#4b5563;fontSize=11;" edge="1" parent="1" source="decPelunasan" target="doPelunasan"/>
+        <mxCell id="e17" value="Tidak" style="endArrow=block;endFill=1;strokeColor=#4b5563;fontSize=11;" edge="1" parent="1" source="decPelunasan" target="end"/>
+        <mxCell id="e18" style="endArrow=block;endFill=1;strokeColor=#4b5563;" edge="1" parent="1" source="doPelunasan" target="end"/>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

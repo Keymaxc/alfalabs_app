@@ -107,9 +107,12 @@
                             <th>Nomor Transaksi</th>
                             <th>Pelanggan</th>
                             <th>Kategori</th>
+                            <th class="text-end">Total</th>
+                            <th class="text-end">Deposit</th>
+                            <th class="text-end">Sisa</th>
                             <th class="text-center">Status</th>
                             <th>Catatan</th>
-                            <th style="width: 150px;">Tanggal</th>
+                            <th style="width: 150px;">Deadline</th>
                             <th class="text-center" style="width: 90px">Aksi</th>
                         </tr>
                     </thead>
@@ -118,6 +121,7 @@
                             @php
                                 $trx   = $item->transaksi;
                                 $kat   = $trx?->kategoriProduk;
+                                $sisa  = max($trx->pelunasan ?? 0, 0);
                                 $badge = match ($item->status) {
                                     'selesai' => 'bg-success',
                                     'diambil' => 'bg-dark',
@@ -131,6 +135,11 @@
                                 <td>{{ $trx?->nomor_transaksi ?? '-' }}</td>
                                 <td>{{ $trx?->nama_pelanggan ?? '-' }}</td>
                                 <td>{{ $kat?->nama_kategori ?? '-' }}</td>
+                                <td class="text-end">Rp {{ number_format($trx->total_harga ?? 0, 0, ',', '.') }}</td>
+                                <td class="text-end">Rp {{ number_format($trx->deposit ?? 0, 0, ',', '.') }}</td>
+                                <td class="text-end {{ $sisa > 0 ? 'text-danger' : 'text-success' }}">
+                                    Rp {{ number_format($sisa, 0, ',', '.') }}
+                                </td>
                                 <td class="text-center">
                                     <span class="badge badge-status {{ $badge }}">
                                         {{ ucfirst($item->status) }}
@@ -142,7 +151,15 @@
                                     </span>
                                 </td>
                                 <td style="font-size: 0.8rem;">
-                                    {{ $item->created_at->format('d/m/Y H:i') }}
+                                    @php $deadline = $trx?->deadline_at; @endphp
+                                    @if($deadline)
+                                        <div>{{ $deadline->format('d/m/Y') }}</div>
+                                        <div class="small text-muted">
+                                            {{ $deadline->diffForHumans(now(), ['parts' => 2, 'short' => true]) }}
+                                        </div>
+                                    @else
+                                        -
+                                    @endif
                                 </td>
                                 <td class="text-center">
                                     <button
@@ -152,6 +169,15 @@
                                     >
                                         <i class="fas fa-edit"></i>
                                     </button>
+                                    @if($sisa > 0)
+                                        <button
+                                            class="btn btn-outline-success btn-sm btn-rounded"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalPelunasan{{ $item->id }}"
+                                        >
+                                            <i class="fas fa-wallet"></i>
+                                        </button>
+                                    @endif
                                 </td>
                             </tr>
 
@@ -175,24 +201,9 @@
                                                 <div class="mb-3">
                                                     <label class="form-label fw-semibold">Tahapan / Status</label>
                                                     <select name="status" class="form-select" required>
-                                                        <option value="menunggu"
-                                                            {{ $item->status == 'menunggu' ? 'selected' : '' }}>
-                                                            Menunggu
-                                                        </option>
-                                                        <option value="proses"
-                                                            {{ $item->status == 'proses' ? 'selected' : '' }}>
-                                                            Proses
-                                                        </option>
-                                                        <option value="selesai"
-                                                            {{ $item->status == 'selesai' ? 'selected' : '' }}>
-                                                            Selesai
-                                                        </option>
-                                                        <option value="diambil"
-                                                            {{ $item->status == 'diambil' ? 'selected' : '' }}>
-                                                            Diambil
-                                                        </option>
+                                                        <option value="diambil" selected>Diambil</option>
                                                     </select>
-                                                </div>
+                                                    </div>
                                                 <div class="mb-3">
                                                     <label class="form-label fw-semibold">Catatan</label>
                                                     <textarea
@@ -218,6 +229,41 @@
                                     </form>
                                 </div>
                             </div>
+
+                            {{-- Modal Pelunasan --}}
+                            <div class="modal fade" id="modalPelunasan{{ $item->id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <form action="{{ route('pengerjaan.pelunasan', $trx?->id) }}" method="POST">
+                                        @csrf
+                                        <div class="modal-content border-0 shadow-sm">
+                                            <div class="modal-header bg-success text-white">
+                                                <h5 class="modal-title">
+                                                    Pelunasan - {{ $trx?->nomor_transaksi }}
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body" style="font-size: 0.85rem;">
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Sisa Bayar</label>
+                                                    <input type="text" class="form-control" value="Rp {{ number_format($sisa, 0, ',', '.') }}" readonly>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Nominal Pelunasan</label>
+                                                    <input type="number" name="jumlah_pelunasan" class="form-control" min="1" max="{{ $sisa }}" required>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-light border btn-rounded px-3" data-bs-dismiss="modal">
+                                                    Batal
+                                                </button>
+                                                <button type="submit" class="btn btn-success btn-rounded px-3">
+                                                    <i class="fas fa-save me-1"></i> Simpan
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         @empty
                             <tr>
                                 <td colspan="8" class="text-center">Belum ada pengerjaan selesai.</td>
@@ -230,6 +276,50 @@
             {{-- Pagination --}}
             <div class="mt-3">
                 {{ $pengerjaans->links() }}
+            </div>
+
+            {{-- Laporan barang sudah diambil --}}
+            <hr class="my-4">
+            <h6 class="fw-bold text-uppercase text-muted mb-3">Laporan Barang Sudah Diambil</h6>
+            <div class="table-responsive">
+                <table class="table table-hover table-sm align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-center" style="width: 40px">No</th>
+                            <th>Nomor Transaksi</th>
+                            <th>Pelanggan</th>
+                            <th>Kategori</th>
+                            <th>Keterangan</th>
+                            <th style="width: 150px;">Tanggal Diambil</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($diambilList as $item)
+                            @php
+                                $trx = $item->transaksi;
+                                $kat = $trx?->kategoriProduk;
+                            @endphp
+                            <tr>
+                                <td class="text-center">{{ $loop->iteration }}</td>
+                                <td>{{ $trx?->nomor_transaksi ?? '-' }}</td>
+                                <td>{{ $trx?->nama_pelanggan ?? '-' }}</td>
+                                <td>{{ $kat?->nama_kategori ?? '-' }}</td>
+                                <td style="max-width: 220px;">
+                                    <span style="font-size: 0.8rem;">
+                                        {{ $item->catatan ? $item->catatan : '-' }}
+                                    </span>
+                                </td>
+                                <td style="font-size: 0.8rem;">
+                                    {{ $item->updated_at?->format('d/m/Y H:i') ?? $item->created_at->format('d/m/Y H:i') }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center">Belum ada barang yang diambil.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

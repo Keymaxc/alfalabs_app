@@ -1,10 +1,18 @@
 <div class="sidebar" data-background-color="dark">
+    <style>
+        .sidebar .nav.nav-secondary > .nav-item > a i,
+        .sidebar .nav.nav-secondary > .nav-item .nav-collapse i {
+            font-size: 14px;
+            width: 18px;
+        }
+    </style>
     <div class="sidebar-logo">
         <!-- Logo Header -->
         <div class="logo-header" data-background-color="dark">
             <a href="/home" class="logo">
-                <img src="{{ asset('template') }}/assets/img/kaiadmin/logo_light.svg" alt="navbar brand"
-                    class="navbar-brand" height="20" />
+                <img src="{{ asset('template') }}/assets/img/alfa-labs-logo.png" alt="Alfa Labs"
+                    class="navbar-brand" height="32" />
+                <span class="ms-2 text-white fw-semibold">alfalabs.co</span>
             </a>
             <div class="nav-toggle">
                 <button class="btn btn-toggle toggle-sidebar">

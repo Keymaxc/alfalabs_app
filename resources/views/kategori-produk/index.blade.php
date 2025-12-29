@@ -34,7 +34,7 @@
                 <tr>
                     <th class="text-center" style="width: 15px">No</th>
                     <th>Nama Kategori</th>
-                    <th>Harga</th>
+                    <th>Harga Jual</th>
                     <th>Stok</th>
                     <th>Stok Minimum</th>
                     <th class="text-center" style="width: 150px">Aksi</th>
@@ -46,8 +46,13 @@
                         <td class="text-center">{{ $loop->iteration }}</td>
                         <td>{{ $item->nama_kategori }}</td>
                         <td>Rp {{ number_format($item->harga, 0, ',', '.') }}</td>
-                        <td>{{ number_format($item->stok, 0, ',', '.') }}</td>
-                        <td>{{ number_format($item->stok_minimum, 0, ',', '.') }}</td>
+                        <td>
+                            {{ number_format($item->stok, 0, ',', '.') }}
+                            @if($item->stok <= 50)
+                                <span class="badge bg-danger ms-1">Priority</span>
+                            @endif
+                        </td>
+                        <td>{{ number_format($item->stok_minimum ?? 50, 0, ',', '.') }}</td>
                         <td class="text-center">
                             {{-- Tombol Edit --}}
                             <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
@@ -79,28 +84,18 @@
                                         <h5 class="modal-title">Edit Kategori</h5>
                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                     </div>
-                                    <div class="modal-body">
-                                        <div class="mb-3">
-                                            <label class="form-label">Nama Kategori</label>
-                                            <input type="text" name="nama_kategori" class="form-control" 
-                                                value="{{ $item->nama_kategori }}" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Harga</label>
-                                            <input type="number" name="harga" class="form-control" 
-                                                value="{{ $item->harga }}" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Stok</label>
-                                            <input type="number" name="stok" class="form-control"
-                                                value="{{ $item->stok }}" min="0" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Stok Minimum</label>
-                                            <input type="number" name="stok_minimum" class="form-control"
-                                                value="{{ $item->stok_minimum }}" min="0" required>
-                                        </div>
-                                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nama Kategori</label>
+                            <input type="text" name="nama_kategori" class="form-control" 
+                                value="{{ $item->nama_kategori }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Harga Jual</label>
+                            <input type="number" name="harga" class="form-control" 
+                                value="{{ $item->harga }}" min="0" required>
+                        </div>
+                    </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                                         <button type="submit" class="btn btn-primary">Simpan</button>
@@ -124,42 +119,6 @@
     </div>
 </div>
 
-{{-- 🔹 Modal Tambah --}}
-<div class="modal fade" id="modalTambah" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <form action="{{ route('master-data.kategori-produk.store') }}" method="POST">
-            @csrf
-            <div class="modal-content">
-                <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title">Tambah Kategori</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Nama Kategori</label>
-                        <input type="text" name="nama_kategori" class="form-control" required>
-                    </div>
-                <div class="mb-3">
-                    <label class="form-label">Harga</label>
-                    <input type="number" name="harga" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Stok</label>
-                    <input type="number" name="stok" class="form-control" min="0" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Stok Minimum</label>
-                    <input type="number" name="stok_minimum" class="form-control" min="0" required>
-                </div>
-            </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Simpan</button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
 @endsection
 
 {{-- 🔹 SweetAlert Notifikasi --}}
@@ -185,3 +144,5 @@
 @endif
 </script>
 @endpush
+
+@include('kategori-produk._modal_tambah')

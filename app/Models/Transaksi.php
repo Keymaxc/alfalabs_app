@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Transaksi extends Model
 {
+    protected $casts = [
+        'deadline_at' => 'datetime',
+    ];
+
     protected $fillable = [
         'nomor_transaksi',
         'jenis_transaksi',
@@ -17,6 +21,7 @@ class Transaksi extends Model
         'kontak_pelanggan',
         'deposit',
         'pelunasan',
+        'deadline_at',
     ];
 
     public function kategoriProduk()
