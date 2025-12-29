@@ -35,6 +35,8 @@
                     <th class="text-center" style="width: 15px">No</th>
                     <th>Nama Kategori</th>
                     <th>Harga</th>
+                    <th>Stok</th>
+                    <th>Stok Minimum</th>
                     <th class="text-center" style="width: 150px">Aksi</th>
                 </tr>
             </thead>
@@ -44,6 +46,8 @@
                         <td class="text-center">{{ $loop->iteration }}</td>
                         <td>{{ $item->nama_kategori }}</td>
                         <td>Rp {{ number_format($item->harga, 0, ',', '.') }}</td>
+                        <td>{{ number_format($item->stok, 0, ',', '.') }}</td>
+                        <td>{{ number_format($item->stok_minimum, 0, ',', '.') }}</td>
                         <td class="text-center">
                             {{-- Tombol Edit --}}
                             <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
@@ -86,6 +90,16 @@
                                             <input type="number" name="harga" class="form-control" 
                                                 value="{{ $item->harga }}" required>
                                         </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Stok</label>
+                                            <input type="number" name="stok" class="form-control"
+                                                value="{{ $item->stok }}" min="0" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Stok Minimum</label>
+                                            <input type="number" name="stok_minimum" class="form-control"
+                                                value="{{ $item->stok_minimum }}" min="0" required>
+                                        </div>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -97,7 +111,7 @@
                     </div>
                 @empty
                     <tr>
-                        <td colspan="4" class="text-center">Data Kategori Kosong</td>
+                        <td colspan="6" class="text-center">Data Kategori Kosong</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -125,11 +139,19 @@
                         <label class="form-label">Nama Kategori</label>
                         <input type="text" name="nama_kategori" class="form-control" required>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Harga</label>
-                        <input type="number" name="harga" class="form-control" required>
-                    </div>
+                <div class="mb-3">
+                    <label class="form-label">Harga</label>
+                    <input type="number" name="harga" class="form-control" required>
                 </div>
+                <div class="mb-3">
+                    <label class="form-label">Stok</label>
+                    <input type="number" name="stok" class="form-control" min="0" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Stok Minimum</label>
+                    <input type="number" name="stok_minimum" class="form-control" min="0" required>
+                </div>
+            </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-primary">Simpan</button>

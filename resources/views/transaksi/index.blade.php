@@ -53,6 +53,10 @@
                        class="btn btn-primary rounded-pill px-3">
                         <i class="fas fa-plus-circle me-1"></i> Input Transaksi
                     </a>
+                    <a href="{{ route('transaksi.stok-masuk') }}"
+                       class="btn btn-outline-primary rounded-pill px-3">
+                        <i class="fas fa-boxes-stacked me-1"></i> Stok Masuk
+                    </a>
                     <a href="{{ route('transaksi.export.pdf', ['q' => request('q')]) }}"
                        class="btn btn-outline-danger rounded-pill px-3"
                        target="_blank">
@@ -75,8 +79,10 @@
                         <tr>
                             <th class="text-center" style="width: 40px">No</th>
                             <th>Nomor Transaksi</th>
+                            <th>Jenis</th>
                             <th>Kategori</th>
                             <th>Nama Pelanggan</th>
+                            <th class="text-end">Jumlah</th>
                             <th>Keterangan</th>
                             <th class="text-end">Total</th>
                             <th class="text-end">Deposit</th>
@@ -92,8 +98,10 @@
                                     {{ $loop->iteration + ($transaksis->currentPage() - 1) * $transaksis->perPage() }}
                                 </td>
                                 <td>{{ $trx->nomor_transaksi }}</td>
+                                <td class="text-capitalize">{{ $trx->jenis_transaksi }}</td>
                                 <td>{{ $trx->kategoriProduk->nama_kategori ?? '-' }}</td>
                                 <td>{{ $trx->nama_pelanggan ?? '-' }}</td>
+                                <td class="text-end">{{ number_format($trx->jumlah, 0, ',', '.') }}</td>
                                 <td>{{ $trx->keterangan ?? '-' }}</td>
                                 <td class="text-end">Rp {{ number_format($trx->total_harga, 0, ',', '.') }}</td>
                                 <td class="text-end">Rp {{ number_format($trx->deposit, 0, ',', '.') }}</td>
@@ -102,7 +110,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="text-center">Belum ada transaksi.</td>
+                                <td colspan="11" class="text-center">Belum ada transaksi.</td>
                             </tr>
                         @endforelse
                     </tbody>

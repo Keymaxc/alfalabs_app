@@ -17,58 +17,45 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 Route::middleware('auth')->group(function () {
 
-    Route::prefix('master-data')->name('master-data.')->group(function () {
+    Route::prefix('master-data')->name('master-data.')->middleware('role:admin')->group(function () {
         Route::resource('kategori-produk', KategoriProdukController::class);
     });
 
-    // Halaman daftar transaksi (tabel)
-    Route::get('/transaksi', [TransaksiController::class, 'index'])
-        ->name('transaksi.index');
+    Route::middleware('role:admin,staff')->group(function () {
+        // Halaman daftar transaksi (tabel)
+        Route::get('/transaksi', [TransaksiController::class, 'index'])
+            ->name('transaksi.index');
 
-    //  Form transaksi masuk
-    Route::get('/transaksi/masuk', [TransaksiController::class, 'create'])
-        ->name('transaksi.masuk');
+        //  Form transaksi masuk
+        Route::get('/transaksi/masuk', [TransaksiController::class, 'create'])
+            ->name('transaksi.masuk');
 
-    //  Simpan transaksi
-    Route::post('/transaksi', [TransaksiController::class, 'store'])
-        ->name('transaksi.store');
-    //  Laporan Transaksi (tabel + search)
-    Route::get('/transaksi', [TransaksiController::class, 'index'])
-        ->name('transaksi.index');
+        //  Simpan transaksi
+        Route::post('/transaksi', [TransaksiController::class, 'store'])
+            ->name('transaksi.store');
 
-    //  Input Transaksi
-    Route::get('/transaksi/masuk', [TransaksiController::class, 'create'])
-        ->name('transaksi.masuk');
+        // Form stok masuk
+        Route::get('/transaksi/stok-masuk', [TransaksiController::class, 'createStokMasuk'])
+            ->name('transaksi.stok-masuk');
 
-    //  Simpan Transaksi
-    Route::post('/transaksi', [TransaksiController::class, 'store'])
-        ->name('transaksi.store');
+        // Simpan stok masuk
+        Route::post('/transaksi/stok-masuk', [TransaksiController::class, 'storeStokMasuk'])
+            ->name('transaksi.stok-masuk.store');
 
-    // Export PDF (mengikuti filter/search)
-    Route::get('/transaksi/export/pdf', [TransaksiController::class, 'exportPdf'])
-        ->name('transaksi.export.pdf');
-    // Halaman Pengerjaan Transaksi
-    Route::get('/pengerjaan', [PengerjaanTransaksiController::class, 'indexBerjalan'])
-        ->name('pengerjaan.berjalan');
+        // Export PDF (mengikuti filter/search)
+        Route::get('/transaksi/export/pdf', [TransaksiController::class, 'exportPdf'])
+            ->name('transaksi.export.pdf');
+    });
 
-    Route::get('/pengerjaan/selesai', [PengerjaanTransaksiController::class, 'indexSelesai'])
-        ->name('pengerjaan.selesai');
+    Route::middleware('role:admin,staff')->group(function () {
+        // Halaman Pengerjaan Transaksi
+        Route::get('/pengerjaan', [PengerjaanTransaksiController::class, 'indexBerjalan'])
+            ->name('pengerjaan.berjalan');
 
-    Route::put('/pengerjaan/{pengerjaan}', [PengerjaanTransaksiController::class, 'update'])
-        ->name('pengerjaan.update');
-});
-Route::prefix('master-data')->name('master-data.')->middleware('auth')->group(function () {
-    Route::prefix('kategori-produk')->name('kategori-produk.')->group(function () {
-        Route::get('/', [KategoriProdukController::class, 'index'])
-            ->name('index');
+        Route::get('/pengerjaan/selesai', [PengerjaanTransaksiController::class, 'indexSelesai'])
+            ->name('pengerjaan.selesai');
 
-        Route::post('/', [KategoriProdukController::class, 'store'])
-            ->name('store');
-
-        Route::put('/{id}', [KategoriProdukController::class, 'update'])
-            ->name('update');
-
-        Route::delete('/{id}', [KategoriProdukController::class, 'destroy'])
-            ->name('destroy');
+        Route::put('/pengerjaan/{pengerjaan}', [PengerjaanTransaksiController::class, 'update'])
+            ->name('pengerjaan.update');
     });
 });

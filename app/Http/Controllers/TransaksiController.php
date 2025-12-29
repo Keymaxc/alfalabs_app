@@ -6,6 +6,7 @@ use App\Models\Transaksi;
 use App\Models\KategoriProduk;
 use App\Models\PengerjaanTransaksi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class TransaksiController extends Controller
@@ -18,6 +19,20 @@ class TransaksiController extends Controller
         $nomorTransaksi  = 'TRX-' . date('YmdHis');
 
         return view('transaksi.form_transaksi_masuk', compact(
+            'pageTitle',
+            'kategoriProduks',
+            'nomorTransaksi'
+        ));
+    }
+
+    // 🔹 FORM INPUT STOK MASUK
+    public function createStokMasuk()
+    {
+        $pageTitle       = 'Transaksi Stok Masuk';
+        $kategoriProduks = KategoriProduk::all();
+        $nomorTransaksi  = 'STK-' . date('YmdHis');
+
+        return view('transaksi.form_transaksi_stok_masuk', compact(
             'pageTitle',
             'kategoriProduks',
             'nomorTransaksi'
@@ -55,39 +70,82 @@ class TransaksiController extends Controller
             ]
         );
 
-        // Ambil kategori & harga
         $kategori = KategoriProduk::findOrFail($validated['kategori_produk_id']);
 
-        // Hitung total harga
-        $validated['total_harga'] = $kategori->harga * $validated['jumlah'];
-
-        // Hitung pelunasan = total - deposit (minimal 0)
-        $deposit   = $validated['deposit'] ?? 0;
-        $pelunasan = $validated['total_harga'] - $deposit;
-        if ($pelunasan < 0) {
-            $pelunasan = 0;
+        if ($kategori->stok < $validated['jumlah']) {
+            return back()
+                ->withErrors(['jumlah' => 'Stok tidak mencukupi untuk transaksi ini.'])
+                ->withInput();
         }
-        $validated['pelunasan'] = $pelunasan;
 
-        // ✅ SIMPAN TRANSAKSI — HANYA SEKALI
-        $transaksi = Transaksi::create($validated);
+        DB::transaction(function () use ($validated, $kategori) {
+            $validated['total_harga'] = $kategori->harga * $validated['jumlah'];
 
-        // ✅ OTOMATIS BUAT DATA PENGERJAAN (status menunggu)
-        PengerjaanTransaksi::create([
-            'transaksi_id' => $transaksi->id,
-            'status'       => 'menunggu',
-            'catatan'      => null,
-        ]);
+            $deposit   = $validated['deposit'] ?? 0;
+            $pelunasan = $validated['total_harga'] - $deposit;
+            if ($pelunasan < 0) {
+                $pelunasan = 0;
+            }
+            $validated['pelunasan'] = $pelunasan;
+
+            $transaksi = Transaksi::create($validated);
+
+            PengerjaanTransaksi::create([
+                'transaksi_id' => $transaksi->id,
+                'status'       => 'menunggu',
+                'catatan'      => null,
+            ]);
+
+            $kategori->decrement('stok', $validated['jumlah']);
+        });
 
         return redirect()
             ->route('transaksi.masuk')
             ->with('success', 'Transaksi berhasil disimpan dan masuk ke daftar pengerjaan!');
     }
 
+    // 🔹 SIMPAN STOK MASUK
+    public function storeStokMasuk(Request $request)
+    {
+        $validated = $request->validate(
+            [
+                'nomor_transaksi'    => 'required',
+                'kategori_produk_id' => 'required|exists:kategori_produks,id',
+                'jumlah'             => 'required|integer|min:1',
+                'keterangan'         => 'nullable|string',
+            ],
+            [
+                'nomor_transaksi.required'    => 'Nomor transaksi wajib diisi.',
+                'kategori_produk_id.required' => 'Kategori barang wajib dipilih.',
+                'kategori_produk_id.exists'   => 'Kategori barang tidak ditemukan.',
+                'jumlah.required'             => 'Jumlah barang wajib diisi.',
+                'jumlah.integer'              => 'Jumlah barang harus berupa angka.',
+                'jumlah.min'                  => 'Jumlah minimal 1.',
+            ]
+        );
+
+        $kategori = KategoriProduk::findOrFail($validated['kategori_produk_id']);
+
+        DB::transaction(function () use ($validated, $kategori) {
+            $validated['jenis_transaksi'] = 'pengeluaran';
+            $validated['total_harga']     = $kategori->harga * $validated['jumlah'];
+            $validated['deposit']         = 0;
+            $validated['pelunasan']       = 0;
+
+            Transaksi::create($validated);
+
+            $kategori->increment('stok', $validated['jumlah']);
+        });
+
+        return redirect()
+            ->route('transaksi.stok-masuk')
+            ->with('success', 'Stok masuk berhasil disimpan.');
+    }
+
     // 🔹 LAPORAN TRANSAKSI (TABEL + SEARCH)
     public function index(Request $request)
     {
-        $pageTitle = 'Daftar Transaksi Masuk';
+        $pageTitle = 'Daftar Transaksi';
         $search    = $request->q; // ?q=...
 
         $query = Transaksi::with('kategoriProduk')->latest();

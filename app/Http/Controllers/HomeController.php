@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaksi;
+use App\Models\KategoriProduk;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -39,13 +40,22 @@ class HomeController extends Controller
             ->take(5)
             ->get();
 
+        $stokMenipis = KategoriProduk::whereColumn('stok', '<=', 'stok_minimum')
+            ->orderBy('stok')
+            ->take(5)
+            ->get();
+
+        $totalStokMenipis = KategoriProduk::whereColumn('stok', '<=', 'stok_minimum')->count();
+
         return view('home', compact(
             'pageTitle',
             'totalTransaksi',
             'totalHariIni',
             'totalBulanIni',
             'totalPelunasanBulanIni',
-            'latestTransaksi'
+            'latestTransaksi',
+            'stokMenipis',
+            'totalStokMenipis'
         ));
     }
 }

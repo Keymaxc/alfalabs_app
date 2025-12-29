@@ -57,8 +57,10 @@
             <tr>
                 <th class="text-center" style="width: 30px;">No</th>
                 <th>Nomor Transaksi</th>
+                <th>Jenis</th>
                 <th>Kategori</th>
                 <th>Nama Pelanggan</th>
+                <th class="text-right">Jumlah</th>
                 <th class="text-right">Total</th>
                 <th class="text-right">Deposit</th>
                 <th class="text-right">Pelunasan</th>
@@ -70,8 +72,10 @@
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
                     <td>{{ $trx->nomor_transaksi }}</td>
+                    <td>{{ ucfirst($trx->jenis_transaksi) }}</td>
                     <td>{{ $trx->kategoriProduk->nama_kategori ?? '-' }}</td>
                     <td>{{ $trx->nama_pelanggan ?? '-' }}</td>
+                    <td class="text-right">{{ number_format($trx->jumlah, 0, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($trx->total_harga, 0, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($trx->deposit, 0, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($trx->pelunasan, 0, ',', '.') }}</td>
@@ -79,7 +83,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" class="text-center">Belum ada transaksi.</td>
+                    <td colspan="10" class="text-center">Belum ada transaksi.</td>
                 </tr>
             @endforelse
         </tbody>

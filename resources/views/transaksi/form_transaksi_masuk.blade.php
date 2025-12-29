@@ -102,6 +102,7 @@
                                 <option
                                     value="{{ $kategori->id }}"
                                     data-harga="{{ $kategori->harga }}"
+                                    data-stok="{{ $kategori->stok }}"
                                     {{ old('kategori_produk_id') == $kategori->id ? 'selected' : '' }}
                                 >
                                     {{ $kategori->nama_kategori }}
@@ -146,7 +147,18 @@
                         @enderror
                     </div>
 
-                    <div class="col-md-8">
+                    <div class="col-md-4">
+                        <label for="stok_tersedia" class="form-label fw-semibold">Stok Tersedia</label>
+                        <input
+                            type="text"
+                            id="stok_tersedia"
+                            class="form-control"
+                            value="0"
+                            readonly
+                        >
+                    </div>
+
+                    <div class="col-md-4">
                         <label for="total_harga" class="form-label fw-semibold">Total Harga</label>
                         <div class="input-group">
                             <span class="input-group-text">Rp</span>
@@ -338,21 +350,24 @@
         const jumlahInput      = document.getElementById('jumlah');
         const hargaRawInput    = document.getElementById('harga_raw');
         const hargaDisplay     = document.getElementById('harga_satuan');
+        const stokDisplay      = document.getElementById('stok_tersedia');
         const totalHiddenInput = document.getElementById('total_harga');
         const totalDisplay     = document.getElementById('total_harga_display');
 
-        if (!kategoriSelect || !jumlahInput || !hargaRawInput || !hargaDisplay || !totalHiddenInput || !totalDisplay) {
+        if (!kategoriSelect || !jumlahInput || !hargaRawInput || !hargaDisplay || !totalHiddenInput || !totalDisplay || !stokDisplay) {
             return;
         }
 
         const selectedOption = kategoriSelect.options[kategoriSelect.selectedIndex] || null;
         const harga  = selectedOption ? Number(selectedOption.getAttribute('data-harga') || 0) : 0;
+        const stok   = selectedOption ? Number(selectedOption.getAttribute('data-stok') || 0) : 0;
         const jumlah = Number(jumlahInput.value || 0);
 
         const total = harga * (jumlah > 0 ? jumlah : 0);
 
         hargaRawInput.value    = harga;
         hargaDisplay.value     = formatRupiah(harga);
+        stokDisplay.value      = formatRupiah(stok);
         totalHiddenInput.value = total;
         totalDisplay.value     = formatRupiah(total);
 

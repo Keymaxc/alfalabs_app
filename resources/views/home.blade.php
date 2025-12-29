@@ -60,52 +60,111 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase mb-1">Barang Perlu Restok</div>
+                    <div class="fw-bold fs-4">
+                        {{ number_format($totalStokMenipis, 0, ',', '.') }}
+                    </div>
+                    <div class="text-muted small mt-1">
+                        Stok di bawah batas minimum
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    {{-- 🔹 Tabel Transaksi Terbaru --}}
-    <div class="card border-0 shadow-sm">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Transaksi Terbaru</h5>
-            <a href="{{ route('transaksi.index') }}" class="btn btn-sm btn-outline-primary rounded-pill">
-                Lihat Semua
-            </a>
+    <div class="row g-3">
+        {{-- 🔹 Tabel Transaksi Terbaru --}} 
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Transaksi Terbaru</h5>
+                    <a href="{{ route('transaksi.index') }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                        Lihat Semua
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 40px" class="text-center">#</th>
+                                    <th>Nomor Transaksi</th>
+                                    <th>Kategori</th>
+                                    <th>Nama Pelanggan</th>
+                                    <th class="text-end">Total</th>
+                                    <th class="text-end">Deposit</th>
+                                    <th class="text-end">Pelunasan</th>
+                                    <th>Tanggal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($latestTransaksi as $trx)
+                                    <tr>
+                                        <td class="text-center">{{ $loop->iteration }}</td>
+                                        <td>{{ $trx->nomor_transaksi }}</td>
+                                        <td>{{ $trx->kategoriProduk->nama_kategori ?? '-' }}</td>
+                                        <td>{{ $trx->nama_pelanggan ?? '-' }}</td>
+                                        <td class="text-end">Rp {{ number_format($trx->total_harga, 0, ',', '.') }}</td>
+                                        <td class="text-end">Rp {{ number_format($trx->deposit, 0, ',', '.') }}</td>
+                                        <td class="text-end">Rp {{ number_format($trx->pelunasan, 0, ',', '.') }}</td>
+                                        <td>{{ $trx->created_at->format('d/m/Y H:i') }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="8" class="text-center py-4">
+                                            Belum ada transaksi.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0 align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="width: 40px" class="text-center">#</th>
-                            <th>Nomor Transaksi</th>
-                            <th>Kategori</th>
-                            <th>Nama Pelanggan</th>
-                            <th class="text-end">Total</th>
-                            <th class="text-end">Deposit</th>
-                            <th class="text-end">Pelunasan</th>
-                            <th>Tanggal</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($latestTransaksi as $trx)
-                            <tr>
-                                <td class="text-center">{{ $loop->iteration }}</td>
-                                <td>{{ $trx->nomor_transaksi }}</td>
-                                <td>{{ $trx->kategoriProduk->nama_kategori ?? '-' }}</td>
-                                <td>{{ $trx->nama_pelanggan ?? '-' }}</td>
-                                <td class="text-end">Rp {{ number_format($trx->total_harga, 0, ',', '.') }}</td>
-                                <td class="text-end">Rp {{ number_format($trx->deposit, 0, ',', '.') }}</td>
-                                <td class="text-end">Rp {{ number_format($trx->pelunasan, 0, ',', '.') }}</td>
-                                <td>{{ $trx->created_at->format('d/m/Y H:i') }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="8" class="text-center py-4">
-                                    Belum ada transaksi.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+
+        {{-- 🔹 Analitik Stok Menipis --}}
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Prioritas Restok</h5>
+                    <a href="{{ route('master-data.kategori-produk.index') }}"
+                       class="btn btn-sm btn-outline-secondary rounded-pill">
+                        Lihat Stok
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Barang</th>
+                                    <th class="text-end">Stok</th>
+                                    <th class="text-end">Min</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($stokMenipis as $stok)
+                                    <tr>
+                                        <td>{{ $stok->nama_kategori }}</td>
+                                        <td class="text-end">{{ number_format($stok->stok, 0, ',', '.') }}</td>
+                                        <td class="text-end">{{ number_format($stok->stok_minimum, 0, ',', '.') }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="text-center py-4">
+                                            Semua stok aman.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
