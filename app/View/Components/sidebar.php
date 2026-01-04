@@ -107,6 +107,14 @@ class sidebar extends Component
                     ],
                 ],
             ],
+            [
+                'label' => 'Laporan Keuangan (PDF)',
+                'route' => 'laporan.keuangan.pdf',
+                'is_active' => request()->routeIs('laporan.keuangan.pdf'),
+                'icon' => 'fas fa-file-invoice-dollar',
+                'is_dropdown' => false,
+                'roles' => ['superadmin'],
+            ],
         ];
 
         if ($user) {

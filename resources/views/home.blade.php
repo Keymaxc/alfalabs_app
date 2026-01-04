@@ -16,6 +16,10 @@
         .card-soft { border-radius: 18px; }
         .list-soft .list-group-item { border: none; }
         .list-soft .list-group-item + .list-group-item { border-top: 1px solid #eef1f6; }
+        .bar-track { background: #eef2f7; height: 10px; border-radius: 999px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 999px; }
+        .bar-income { background: linear-gradient(90deg, #22c55e, #52e499); }
+        .bar-expense { background: linear-gradient(90deg, #ef4444, #fb7185); }
     </style>
 
     {{-- Kartu Analitik (4 box) --}}
@@ -110,6 +114,118 @@
         </div>
 
     </div>
+
+    {{-- Laporan Keuangan Bulanan (hanya superadmin) --}}
+    @if(auth()->user()?->isSuperAdmin())
+    @php
+        $maxWeekly = max(
+            max($weeklyIncome ?? [0]),
+            max($weeklyExpense ?? [0]),
+            1
+        );
+    @endphp
+    <div class="card border-0 shadow-sm mb-4 card-soft">
+        <div class="card-header bg-white border-0 d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <p class="text-uppercase text-muted small mb-1">Laporan Keuangan</p>
+                <h5 class="mb-0 fw-bold">Periode {{ $selectedMonthLabel }}</h5>
+            </div>
+            <form action="{{ route('home') }}" method="GET" class="d-flex flex-wrap gap-2 align-items-center">
+                <input type="month" name="month" value="{{ $selectedMonth }}" class="form-control form-control-sm" style="min-width: 160px;">
+                <button class="btn btn-outline-secondary btn-sm rounded-pill" type="submit">Terapkan</button>
+                <a href="{{ route('laporan.keuangan.pdf', ['month' => $selectedMonth]) }}"
+                   class="btn btn-primary btn-sm rounded-pill">
+                    <i class="fas fa-file-pdf me-1"></i> Download PDF
+                </a>
+            </form>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-lg-4">
+                    <div class="list-group list-group-flush list-soft">
+                        <div class="list-group-item px-0 d-flex justify-content-between">
+                            <div>
+                                <div class="text-muted small">Total Pemasukan</div>
+                                <div class="fw-bold">Rp {{ number_format($totalBulanIni, 0, ',', '.') }}</div>
+                            </div>
+                            <span class="badge bg-success-subtle text-success border">Pemasukan</span>
+                        </div>
+                        <div class="list-group-item px-0 d-flex justify-content-between">
+                            <div>
+                                <div class="text-muted small">Total Pengeluaran / Kerugian</div>
+                                <div class="fw-bold">Rp {{ number_format($totalPengeluaranBulanIni, 0, ',', '.') }}</div>
+                            </div>
+                            <span class="badge bg-danger-subtle text-danger border">Pengeluaran</span>
+                        </div>
+                        <div class="list-group-item px-0 d-flex justify-content-between">
+                            <div>
+                                <div class="text-muted small">Laba / Rugi</div>
+                                @php $isProfit = $labaRugiBulanIni >= 0; @endphp
+                                <div class="fw-bold {{ $isProfit ? 'text-success' : 'text-danger' }}">
+                                    Rp {{ number_format($labaRugiBulanIni, 0, ',', '.') }}
+                                </div>
+                            </div>
+                            <span class="badge {{ $isProfit ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }} border">
+                                {{ $isProfit ? 'Laba' : 'Rugi' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <div class="text-uppercase text-muted small">Grafik Mingguan</div>
+                            <div class="fw-semibold">Pemasukan vs Pengeluaran</div>
+                        </div>
+                        <div class="d-flex align-items-center gap-3 small text-muted">
+                            <span class="d-inline-flex align-items-center gap-1">
+                                <span style="width:14px;height:8px;background:#22c55e;display:inline-block;border-radius:4px;"></span> Pemasukan
+                            </span>
+                            <span class="d-inline-flex align-items-center gap-1">
+                                <span style="width:14px;height:8px;background:#ef4444;display:inline-block;border-radius:4px;"></span> Pengeluaran
+                            </span>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 80px;">Minggu</th>
+                                    <th>Pemasukan</th>
+                                    <th>Pengeluaran</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($weeklyIncome as $week => $incomeValue)
+                                    @php
+                                        $expenseValue = $weeklyExpense[$week] ?? 0;
+                                        $incomePct  = $maxWeekly > 0 ? ($incomeValue / $maxWeekly) * 100 : 0;
+                                        $expensePct = $maxWeekly > 0 ? ($expenseValue / $maxWeekly) * 100 : 0;
+                                    @endphp
+                                    <tr>
+                                        <td class="fw-semibold">Minggu {{ $week }}</td>
+                                        <td>
+                                            <div class="bar-track mb-1">
+                                                <div class="bar-fill bar-income" style="width: {{ $incomePct }}%;"></div>
+                                            </div>
+                                            <div class="small text-muted">Rp {{ number_format($incomeValue, 0, ',', '.') }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="bar-track mb-1">
+                                                <div class="bar-fill bar-expense" style="width: {{ $expensePct }}%;"></div>
+                                            </div>
+                                            <div class="small text-muted">Rp {{ number_format($expenseValue, 0, ',', '.') }}</div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
     {{-- Deadline + Restok (sebaris) --}}
     <div class="row g-3 mb-4">

@@ -3,6 +3,7 @@
 use App\Http\Controllers\KategoriProdukController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\PengerjaanTransaksiController;
+use App\Http\Controllers\LaporanKeuanganController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -71,5 +72,10 @@ Route::middleware('auth')->group(function () {
         // Pelunasan transaksi
         Route::post('/pengerjaan/{transaksi}/pelunasan', [PengerjaanTransaksiController::class, 'pelunasan'])
             ->name('pengerjaan.pelunasan');
+    });
+
+    Route::middleware('role:superadmin')->group(function () {
+        Route::get('/laporan/keuangan/pdf', [LaporanKeuanganController::class, 'pdf'])
+            ->name('laporan.keuangan.pdf');
     });
 });

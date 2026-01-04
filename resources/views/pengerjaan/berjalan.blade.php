@@ -118,6 +118,7 @@
                             @php
                                 $trx   = $item->transaksi;
                                 $kat   = $trx?->kategoriProduk;
+                                $sisa  = max($trx?->pelunasan ?? 0, 0);
                                 $badge = match ($item->status) {
                                     'menunggu' => 'bg-secondary',
                                     'proses'   => 'bg-info text-dark',
@@ -195,7 +196,18 @@
                                                             {{ $item->status == 'selesai' ? 'selected' : '' }}>
                                                             Selesai
                                                         </option>
+                                                        <option value="diambil"
+                                                            {{ $item->status == 'diambil' ? 'selected' : '' }}
+                                                            {{ $sisa > 0 ? 'disabled' : '' }}>
+                                                            Diambil {{ $sisa > 0 ? '(lunasi dulu)' : '' }}
+                                                        </option>
                                                     </select>
+                                                    @if($sisa > 0)
+                                                        <small class="text-danger d-block mt-1">
+                                                            Sisa pembayaran Rp {{ number_format($sisa, 0, ',', '.') }}
+                                                            harus 0 sebelum status "diambil".
+                                                        </small>
+                                                    @endif
                                                 </div>
                                                 <div class="mb-3">
                                                     <label class="form-label fw-semibold">Catatan</label>
