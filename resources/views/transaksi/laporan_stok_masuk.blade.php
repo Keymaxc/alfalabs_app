@@ -77,18 +77,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($transaksis as $trx)
+                        @forelse ($stokMasuks as $trx)
                             <tr>
                                 <td class="text-center">
-                                    {{ $loop->iteration + ($transaksis->currentPage() - 1) * $transaksis->perPage() }}
+                                    {{ $loop->iteration + ($stokMasuks->currentPage() - 1) * $stokMasuks->perPage() }}
                                 </td>
                                 <td>{{ $trx->nomor_transaksi }}</td>
                                 <td>{{ $trx->kategoriProduk->nama_kategori ?? '-' }}</td>
                                 <td class="text-end">
-                                    @php
-                                        $hargaSatuan = $trx->jumlah > 0 ? ($trx->total_harga / max($trx->jumlah,1)) : 0;
-                                    @endphp
-                                    Rp {{ number_format($hargaSatuan, 0, ',', '.') }}
+                                    Rp {{ number_format($trx->harga_satuan ?? 0, 0, ',', '.') }}
                                 </td>
                                 <td class="text-end">{{ number_format($trx->jumlah, 0, ',', '.') }}</td>
                                 <td class="text-end">Rp {{ number_format($trx->total_harga, 0, ',', '.') }}</td>
@@ -97,7 +94,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center">Belum ada stok masuk.</td>
+                                <td colspan="8" class="text-center">Belum ada stok masuk.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -105,7 +102,7 @@
             </div>
 
             <div class="mt-3">
-                {{ $transaksis->onEachSide(1)->links('pagination::bootstrap-5') }}
+                {{ $stokMasuks->onEachSide(1)->links('pagination::bootstrap-5') }}
             </div>
         </div>
     </div>

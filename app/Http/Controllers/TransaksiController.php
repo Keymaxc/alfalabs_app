@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Transaksi;
 use App\Models\KategoriProduk;
 use App\Models\PengerjaanTransaksi;
+use App\Models\StokMasuk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -123,6 +124,7 @@ class TransaksiController extends Controller
                 'kategori_produk_id' => 'required|exists:kategori_produks,id',
                 'jumlah'             => 'required|integer|min:1',
                 'harga_satuan'       => 'required|integer|min:0',
+                'total_harga'        => 'nullable|integer|min:0',
                 'keterangan'         => 'nullable|string',
             ],
             [
@@ -141,13 +143,16 @@ class TransaksiController extends Controller
         $kategori = KategoriProduk::findOrFail($validated['kategori_produk_id']);
 
         DB::transaction(function () use ($validated, $kategori) {
-            $validated['jenis_transaksi'] = 'pengeluaran';
-            $validated['total_harga']     = ($validated['harga_satuan'] ?? 0) * $validated['jumlah'];
-            $validated['deposit']         = 0;
-            $validated['pelunasan']       = 0;
-            unset($validated['harga_satuan']);
+            $validated['total_harga'] = ($validated['harga_satuan'] ?? 0) * $validated['jumlah'];
 
-            Transaksi::create($validated); // total_harga sudah manual input
+            StokMasuk::create([
+                'nomor_transaksi'    => $validated['nomor_transaksi'],
+                'kategori_produk_id' => $validated['kategori_produk_id'],
+                'jumlah'             => $validated['jumlah'],
+                'harga_satuan'       => $validated['harga_satuan'],
+                'total_harga'        => $validated['total_harga'],
+                'keterangan'         => $validated['keterangan'] ?? null,
+            ]);
 
             $kategori->increment('stok', $validated['jumlah']);
         });
@@ -210,8 +215,7 @@ class TransaksiController extends Controller
         $pageTitle = 'Laporan Stok Masuk';
         $search    = $request->q;
 
-        $query = Transaksi::with('kategoriProduk')
-            ->where('nomor_transaksi', 'like', 'STK-%')
+        $query = StokMasuk::with('kategoriProduk')
             ->latest();
 
         if ($search) {
@@ -224,9 +228,9 @@ class TransaksiController extends Controller
             });
         }
 
-        $transaksis = $query->paginate(10)->appends(['q' => $search]);
+        $stokMasuks = $query->paginate(10)->appends(['q' => $search]);
 
-        return view('transaksi.laporan_stok_masuk', compact('pageTitle', 'transaksis', 'search'));
+        return view('transaksi.laporan_stok_masuk', compact('pageTitle', 'stokMasuks', 'search'));
     }
 
     // 🔹 EXPORT PDF (IKUT SEARCH)
@@ -267,8 +271,7 @@ class TransaksiController extends Controller
         $pageTitle = 'Laporan Stok Masuk';
         $search    = $request->q;
 
-        $query = Transaksi::with('kategoriProduk')
-            ->where('nomor_transaksi', 'like', 'STK-%')
+        $query = StokMasuk::with('kategoriProduk')
             ->latest();
 
         if ($search) {
@@ -281,9 +284,9 @@ class TransaksiController extends Controller
             });
         }
 
-        $transaksis = $query->get();
+        $stokMasuks = $query->get();
 
-        $pdf = Pdf::loadView('transaksi.laporan_stok_masuk_pdf', compact('transaksis', 'pageTitle', 'search'))
+        $pdf = Pdf::loadView('transaksi.laporan_stok_masuk_pdf', compact('stokMasuks', 'pageTitle', 'search'))
             ->setPaper('a4', 'portrait');
 
         $filename = 'laporan_stok_masuk_' . now()->format('Ymd_His') . '.pdf';

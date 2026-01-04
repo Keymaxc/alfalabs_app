@@ -20,9 +20,63 @@
         .bar-fill { height: 100%; border-radius: 999px; }
         .bar-income { background: linear-gradient(90deg, #22c55e, #52e499); }
         .bar-expense { background: linear-gradient(90deg, #ef4444, #fb7185); }
+        .card-soft .list-icon { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 10px; }
     </style>
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('analytics-filter');
+        if (!form) return;
 
-    {{-- Kartu Analitik (4 box) --}}
+        const dateInput = document.getElementById('dateFilter');
+        const monthInput = document.getElementById('monthFilter');
+        const todayBtn  = document.getElementById('todayBtn');
+
+        const submitWithMonth = () => {
+            if (dateInput && monthInput && dateInput.value) {
+                monthInput.value = dateInput.value.slice(0, 7);
+            }
+            form.submit();
+        };
+
+        if (dateInput) {
+            dateInput.addEventListener('change', submitWithMonth);
+        }
+
+        if (todayBtn && dateInput) {
+            todayBtn.addEventListener('click', () => {
+                const today = new Date();
+                const y = today.getFullYear();
+                const m = String(today.getMonth() + 1).padStart(2, '0');
+                const d = String(today.getDate()).padStart(2, '0');
+                dateInput.value = `${y}-${m}-${d}`;
+                submitWithMonth();
+            });
+        }
+    });
+</script>
+@endpush
+
+    {{-- Filter global (gabung tanggal & bulan) --}}
+    <form id="analytics-filter" action="{{ route('home') }}" method="GET" class="card border-0 shadow-sm mb-3 card-soft">
+        <div class="card-body d-flex flex-wrap gap-3 align-items-center">
+            <div class="d-flex flex-column">
+                <label class="form-label text-muted small mb-1">Pilih tanggal</label>
+                <input type="date" name="date" id="dateFilter" value="{{ $selectedDate->format('Y-m-d') }}" class="form-control form-control-sm" style="min-width: 180px;">
+                <input type="hidden" name="month" id="monthFilter" value="{{ $selectedMonth }}">
+                <small class="text-muted mt-1">Bulan otomatis mengikuti tanggal.</small>
+            </div>
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" id="todayBtn">
+                    Hari ini
+                </button>
+                <a href="{{ route('home') }}" class="btn btn-light btn-sm rounded-pill px-3">Reset</a>
+            </div>
+        </div>
+    </form>
+
+    {{-- Status Akses & Data dihilangkan sesuai permintaan --}}
+
     <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-3 mb-4 analytics-grid">
         <div class="col">
             <div class="card border-0 shadow-sm h-100 card-soft">
@@ -46,9 +100,9 @@
                         <i class="fas fa-sun"></i>
                     </div>
                     <div>
-                        <div class="stat-muted text-uppercase">Pemasukan Hari Ini</div>
-                        <div class="fw-bold fs-4">Rp {{ number_format($totalHariIni, 0, ',', '.') }}</div>
-                        <div class="text-muted small">Tanggal {{ now()->format('d/m/Y') }}</div>
+                        <div class="stat-muted text-uppercase">Pemasukan Tanggal Ini</div>
+                        <div class="fw-bold fs-4">Rp {{ number_format($totalTanggal, 0, ',', '.') }}</div>
+                        <div class="text-muted small">Tanggal {{ $selectedDateLabel }} ({{ number_format($totalTransaksiTanggal, 0, ',', '.') }} transaksi)</div>
                     </div>
                 </div>
             </div>
@@ -63,7 +117,7 @@
                     <div>
                         <div class="stat-muted text-uppercase">Pemasukan Bulan Ini</div>
                         <div class="fw-bold fs-4">Rp {{ number_format($totalBulanIni, 0, ',', '.') }}</div>
-                        <div class="text-muted small">{{ now()->format('F Y') }}</div>
+                        <div class="text-muted small">{{ $selectedMonthLabel }} ({{ number_format($totalTransaksiBulanIni, 0, ',', '.') }} transaksi)</div>
                     </div>
                 </div>
             </div>
@@ -227,6 +281,85 @@
     </div>
     @endif
 
+    {{-- Rekap transaksi per tanggal & per bulan --}}
+    <div class="row g-3 mb-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100 card-soft">
+                <div class="card-header d-flex justify-content-between align-items-center bg-white border-0">
+                    <div>
+                        <p class="text-uppercase text-muted small mb-1">Rekap</p>
+                        <h5 class="mb-0 fw-bold">Transaksi per Tanggal (14 hari)</h5>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle table-modern">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th class="text-end">Jumlah</th>
+                                    <th class="text-end">Pemasukan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($transaksiPerTanggal as $row)
+                                    <tr>
+                                        <td>{{ \Carbon\Carbon::parse($row->tanggal)->format('d/m/Y') }}</td>
+                                        <td class="text-end">{{ number_format($row->total_transaksi, 0, ',', '.') }}</td>
+                                        <td class="text-end">Rp {{ number_format($row->total_pemasukan, 0, ',', '.') }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="text-center py-4">Belum ada data.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100 card-soft">
+                <div class="card-header d-flex justify-content-between align-items-center bg-white border-0">
+                    <div>
+                        <p class="text-uppercase text-muted small mb-1">Rekap</p>
+                        <h5 class="mb-0 fw-bold">Transaksi per Bulan (12 bulan)</h5>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle table-modern">
+                            <thead>
+                                <tr>
+                                    <th>Bulan</th>
+                                    <th class="text-end">Jumlah</th>
+                                    <th class="text-end">Pemasukan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($transaksiPerBulan as $row)
+                                    @php
+                                        $bulanLabel = \Carbon\Carbon::createFromFormat('Y-m', $row->bulan)->isoFormat('MMMM Y');
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $bulanLabel }}</td>
+                                        <td class="text-end">{{ number_format($row->total_transaksi, 0, ',', '.') }}</td>
+                                        <td class="text-end">Rp {{ number_format($row->total_pemasukan, 0, ',', '.') }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="text-center py-4">Belum ada data.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Deadline + Restok (sebaris) --}}
     <div class="row g-3 mb-4">
         <div class="col-lg-8">
@@ -234,7 +367,7 @@
                 <div class="card-header d-flex justify-content-between align-items-center bg-white border-0">
                     <div>
                         <p class="text-uppercase text-muted small mb-1">Deadline Terdekat</p>
-                        <h5 class="mb-0 fw-bold">Pengerjaan Mendekati Tenggat</h5>
+                        <h5 class="mb-0 fw-bold">Pengerjaan 7 Hari Ke Depan</h5>
                     </div>
                     <a href="{{ route('transaksi.index', ['deadline' => 'soon']) }}" class="btn btn-sm btn-outline-primary rounded-pill">
                         Lihat Transaksi

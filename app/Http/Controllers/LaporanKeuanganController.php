@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaksi;
+use App\Models\StokMasuk;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -22,9 +23,7 @@ class LaporanKeuanganController extends Controller
             ->whereBetween('created_at', [$start, $end])
             ->sum('total_harga');
 
-        $totalPengeluaran = Transaksi::where('jenis_transaksi', 'pengeluaran')
-            ->whereBetween('created_at', [$start, $end])
-            ->sum('total_harga');
+        $totalPengeluaran = StokMasuk::whereBetween('created_at', [$start, $end])->sum('total_harga');
 
         $labaRugi = $totalPemasukan - $totalPengeluaran;
 
@@ -64,21 +63,27 @@ class LaporanKeuanganController extends Controller
         $weeksIncome  = array_fill(1, 5, 0);
         $weeksExpense = array_fill(1, 5, 0);
 
-        $rows = Transaksi::selectRaw('DATE(created_at) as tanggal, jenis_transaksi, SUM(total_harga) as total')
+        $incomeRows = Transaksi::selectRaw('DATE(created_at) as tanggal, SUM(total_harga) as total')
             ->whereBetween('created_at', [$start, $end])
-            ->whereIn('jenis_transaksi', ['pemasukan', 'pengeluaran'])
-            ->groupBy('tanggal', 'jenis_transaksi')
+            ->where('jenis_transaksi', 'pemasukan')
+            ->groupBy('tanggal')
             ->get();
 
-        foreach ($rows as $row) {
+        $expenseRows = StokMasuk::selectRaw('DATE(created_at) as tanggal, SUM(total_harga) as total')
+            ->whereBetween('created_at', [$start, $end])
+            ->groupBy('tanggal')
+            ->get();
+
+        foreach ($incomeRows as $row) {
             $date = Carbon::parse($row->tanggal);
             $weekIndex = min(intdiv($date->day - 1, 7) + 1, 5);
+            $weeksIncome[$weekIndex] += $row->total;
+        }
 
-            if ($row->jenis_transaksi === 'pemasukan') {
-                $weeksIncome[$weekIndex] += $row->total;
-            } else {
-                $weeksExpense[$weekIndex] += $row->total;
-            }
+        foreach ($expenseRows as $row) {
+            $date = Carbon::parse($row->tanggal);
+            $weekIndex = min(intdiv($date->day - 1, 7) + 1, 5);
+            $weeksExpense[$weekIndex] += $row->total;
         }
 
         return [$weeksIncome, $weeksExpense];

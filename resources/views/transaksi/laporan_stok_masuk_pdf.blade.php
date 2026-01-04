@@ -38,7 +38,7 @@
             </tr>
         </thead>
         <tbody>
-            @forelse ($transaksis as $trx)
+            @forelse ($stokMasuks as $trx)
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
                     <td>{{ $trx->nomor_transaksi }}</td>

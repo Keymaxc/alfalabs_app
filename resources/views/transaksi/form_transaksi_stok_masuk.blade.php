@@ -52,7 +52,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('transaksi.stok-masuk.store') }}" method="POST">
+            <form id="form-stok-masuk" action="{{ route('transaksi.stok-masuk.store') }}" method="POST">
                 @csrf
 
                 <h6 class="fw-bold text-uppercase text-muted mb-3">Info Stok Masuk</h6>
@@ -215,6 +215,11 @@
         }).format(angka);
     }
 
+    function parseAngka(value) {
+        const cleaned = String(value ?? '').replace(/[^\d]/g, '');
+        return Number(cleaned) || 0;
+    }
+
     function updateStokMasuk() {
         const kategoriSelect = document.getElementById('kategori_produk_id');
         const jumlahInput = document.getElementById('jumlah');
@@ -229,8 +234,8 @@
 
         const selectedOption = kategoriSelect.options[kategoriSelect.selectedIndex] || null;
         const stok = selectedOption ? Number(selectedOption.getAttribute('data-stok') || 0) : 0;
-        const harga = Number(hargaInput.value || 0);
-        const jumlah = Number(jumlahInput.value || 0);
+        const harga = parseAngka(hargaInput.value);
+        const jumlah = parseAngka(jumlahInput.value);
 
         const total = harga * (jumlah > 0 ? jumlah : 0);
 
@@ -243,6 +248,7 @@
         const kategoriSelect = document.getElementById('kategori_produk_id');
         const jumlahInput = document.getElementById('jumlah');
         const hargaInput = document.getElementById('harga_satuan');
+        const formStok = document.getElementById('form-stok-masuk');
 
         if (kategoriSelect) {
             kategoriSelect.addEventListener('change', updateStokMasuk);
@@ -252,6 +258,11 @@
         }
         if (hargaInput) {
             hargaInput.addEventListener('input', updateStokMasuk);
+        }
+        if (formStok) {
+            formStok.addEventListener('reset', function () {
+                setTimeout(updateStokMasuk, 0);
+            });
         }
 
         updateStokMasuk();

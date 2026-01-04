@@ -8,15 +8,13 @@ use Illuminate\View\Component;
 
 class sidebar extends Component
 {
-    /**
-     * Create a new component instance.
-     */
     public $links;
 
     public function __construct()
     {
         $user = auth()->user();
 
+        // Urutan: Dashboard -> Penjualan -> Pengerjaan -> Stok Masuk -> Produk & Stok -> Forecast -> Laporan
         $this->links = [
             [
                 'label' => 'Dashboard',
@@ -27,63 +25,25 @@ class sidebar extends Component
                 'roles' => ['admin', 'staff', 'superadmin'],
             ],
             [
-                'label' => 'Produk & Stok',
-                'route' => '#',
-                'is_active' => request()->routeIs('master-data.*'),
-                'icon' => 'fas fa-boxes',
-                'is_dropdown' => true,
-                'roles' => ['admin', 'superadmin'], // admin manages product data
-                'item' => [
-                    [
-                        'label' => 'Kelola Produk',
-                        'route' => 'master-data.kategori-produk.index',
-                        'roles' => ['admin', 'superadmin'],
-                    ],
-                ],
-            ],
-            // 🔹 Penjualan
-            [
                 'label' => 'Penjualan',
                 'route' => '#',
-                'is_active' => request()->routeIs('transaksi.masuk') || request()->routeIs('transaksi.index') || request()->routeIs('transaksi.export.pdf') || request()->routeIs('transaksi.struk.*'),
-                'icon' => 'fas fa-cart-plus', 
+                'is_active' => request()->routeIs('transaksi.masuk')
+                    || request()->routeIs('transaksi.index')
+                    || request()->routeIs('transaksi.export.pdf')
+                    || request()->routeIs('transaksi.struk.*'),
+                'icon' => 'fas fa-cart-plus',
                 'is_dropdown' => true,
                 'roles' => ['admin', 'staff', 'superadmin'],
                 'item' => [
                     [
                         'label' => 'Input Penjualan',
                         'route' => 'transaksi.masuk',
-                        'roles' => ['admin', 'superadmin'], // admin adds new orders/products
-                        'icon' => null,
+                        'roles' => ['admin', 'superadmin'],
                     ],
                     [
                         'label' => 'Daftar Penjualan',
                         'route' => 'transaksi.index',
-                        'roles' => ['staff', 'admin', 'superadmin'], // staff & admin view transactions
-                        'icon' => null,
-                    ],
-                ],
-            ],
-            // 🔹 Stok Masuk
-            [
-                'label' => 'Stok Masuk',
-                'route' => '#',
-                'is_active' => request()->routeIs('transaksi.stok-masuk') || request()->routeIs('transaksi.stok-masuk.*'),
-                'icon' => 'fas fa-exchange-alt', 
-                'is_dropdown' => true,
-                'roles' => ['admin', 'staff', 'superadmin'],
-                'item' => [
-                    [
-                        'label' => 'Input Stok',
-                        'route' => 'transaksi.stok-masuk',
-                        'roles' => ['admin', 'superadmin'], // admin adds stock
-                        'icon'  => 'fas fa-arrow-circle-down',
-                    ],
-                    [
-                        'label' => 'Laporan Stok Masuk',
-                        'route' => 'transaksi.stok-masuk.laporan',
-                        'roles' => ['staff', 'admin', 'superadmin'], // staff & admin view stock
-                        'icon'  => 'fas fa-clipboard-list',
+                        'roles' => ['staff', 'admin', 'superadmin'],
                     ],
                 ],
             ],
@@ -93,19 +53,62 @@ class sidebar extends Component
                 'is_active'  => request()->routeIs('pengerjaan.*'),
                 'icon'       => 'fas fa-tasks',
                 'is_dropdown'=> true,
-                'roles' => ['admin', 'staff', 'superadmin'],
+                'roles'      => ['admin', 'staff', 'superadmin'],
                 'item'       => [
                     [
                         'label' => 'Order Berjalan',
                         'route' => 'pengerjaan.berjalan',
-                        'roles' => ['admin', 'staff', 'superadmin'], // admin & staff produksi pantau pekerjaan aktif
+                        'roles' => ['admin', 'staff', 'superadmin'],
                     ],
                     [
                         'label' => 'Order Selesai',
                         'route' => 'pengerjaan.selesai',
-                        'roles' => ['admin', 'superadmin'], // admin: tabel pesanan selesai
+                        'roles' => ['admin', 'superadmin'],
                     ],
                 ],
+            ],
+            [
+                'label' => 'Stok Masuk',
+                'route' => '#',
+                'is_active' => request()->routeIs('transaksi.stok-masuk') || request()->routeIs('transaksi.stok-masuk.*'),
+                'icon' => 'fas fa-exchange-alt',
+                'is_dropdown' => true,
+                'roles' => ['admin', 'staff', 'superadmin'],
+                'item' => [
+                    [
+                        'label' => 'Input Stok',
+                        'route' => 'transaksi.stok-masuk',
+                        'roles' => ['admin', 'superadmin'],
+                    ],
+                    [
+                        'label' => 'Laporan Stok Masuk',
+                        'route' => 'transaksi.stok-masuk.laporan',
+                        'roles' => ['staff', 'admin', 'superadmin'],
+                    ],
+                ],
+            ],
+            [
+                'label' => 'Produk & Stok',
+                'route' => '#',
+                'is_active' => request()->routeIs('master-data.*'),
+                'icon' => 'fas fa-boxes',
+                'is_dropdown' => true,
+                'roles' => ['admin', 'superadmin'],
+                'item' => [
+                    [
+                        'label' => 'Kelola Produk',
+                        'route' => 'master-data.kategori-produk.index',
+                        'roles' => ['admin', 'superadmin'],
+                    ],
+                ],
+            ],
+            [
+                'label' => 'Forecast Stok',
+                'route' => 'forecast.index',
+                'is_active' => request()->routeIs('forecast.index'),
+                'icon' => 'fas fa-chart-bar',
+                'is_dropdown' => false,
+                'roles' => ['admin', 'staff', 'superadmin'],
             ],
             [
                 'label' => 'Laporan Keuangan (PDF)',
@@ -146,9 +149,6 @@ class sidebar extends Component
         return $filtered;
     }
 
-    /**
-     * Get the view / contents that represent the component.
-     */
     public function render(): View|Closure|string
     {
         return view('components.sidebar');

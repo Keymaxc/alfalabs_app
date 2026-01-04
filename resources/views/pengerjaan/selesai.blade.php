@@ -266,7 +266,7 @@
                             </div>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center">Belum ada pengerjaan selesai.</td>
+                                <td colspan="11" class="text-center">Belum ada pengerjaan selesai.</td>
                             </tr>
                         @endforelse
                     </tbody>

@@ -119,7 +119,7 @@
                             </div>
                         </form>
                         <p class="text-center text-muted mt-3 mb-0" style="font-size: 0.9rem;">
-                            Registrasi akun admin/staff? <a href="{{ route('register') }}" class="text-primary">Registrasi</a>
+                            Gunakan email dan password yang sudah terdaftar. Hubungi admin jika butuh akses baru.
                         </p>
                     </div>
                 </div>

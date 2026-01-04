@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Transaksi;
 use App\Models\KategoriProduk;
+use App\Models\StokMasuk;
+use App\Models\Forecast;
+use App\Models\StockRecommendation;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -18,17 +21,22 @@ class HomeController extends Controller
     {
         $pageTitle = 'Dashboard';
 
-        [$startOfMonth, $endOfMonth, $selectedMonth, $selectedMonthLabel] = $this->resolvePeriod(
-            $request->query('month')
-        );
+        [$selectedDate, $selectedDateLabel, $monthFromDate] = $this->resolveDate($request->query('date'));
+        $today = now()->startOfDay();
+
+        $monthParam = $request->query('month') ?? $monthFromDate;
+        [$startOfMonth, $endOfMonth, $selectedMonth, $selectedMonthLabel] = $this->resolvePeriod($monthParam);
 
         // Total semua transaksi pemasukan
         $totalTransaksi = Transaksi::where('jenis_transaksi', 'pemasukan')->count();
 
-        // Total pemasukan hari ini
-        $totalHariIni = Transaksi::where('jenis_transaksi', 'pemasukan')
-            ->whereDate('created_at', today())
+        // Total pemasukan per tanggal (default: hari ini)
+        $totalTanggal = Transaksi::where('jenis_transaksi', 'pemasukan')
+            ->whereDate('created_at', $selectedDate)
             ->sum('total_harga');
+        $totalTransaksiTanggal = Transaksi::where('jenis_transaksi', 'pemasukan')
+            ->whereDate('created_at', $selectedDate)
+            ->count();
 
         // Total pemasukan & transaksi bulan ini (pemasukan saja)
         $totalBulanIni = Transaksi::where('jenis_transaksi', 'pemasukan')
@@ -45,8 +53,7 @@ class HomeController extends Controller
             ->sum('pelunasan');
 
         // Total pengeluaran (kerugian) bulan ini
-        $totalPengeluaranBulanIni = Transaksi::where('jenis_transaksi', 'pengeluaran')
-            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+        $totalPengeluaranBulanIni = StokMasuk::whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->sum('total_harga');
 
         $labaRugiBulanIni = $totalBulanIni - $totalPengeluaranBulanIni;
@@ -69,15 +76,29 @@ class HomeController extends Controller
         $deadlineAlerts = Transaksi::with('kategoriProduk')
             ->where('jenis_transaksi', 'pemasukan')
             ->whereNotNull('deadline_at')
-            ->where('deadline_at', '<=', now()->addDays(2))
+            ->whereBetween('deadline_at', [now()->startOfDay(), now()->addDays(7)])
             ->orderBy('deadline_at')
             ->take(5)
+            ->get();
+
+        $transaksiPerTanggal = Transaksi::selectRaw('DATE(created_at) as tanggal, COUNT(*) as total_transaksi, SUM(total_harga) as total_pemasukan')
+            ->where('jenis_transaksi', 'pemasukan')
+            ->groupBy('tanggal')
+            ->orderByDesc('tanggal')
+            ->limit(14)
+            ->get();
+
+        $transaksiPerBulan = Transaksi::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as bulan, COUNT(*) as total_transaksi, SUM(total_harga) as total_pemasukan")
+            ->where('jenis_transaksi', 'pemasukan')
+            ->groupBy('bulan')
+            ->orderByDesc('bulan')
+            ->limit(12)
             ->get();
 
         return view('home', compact(
             'pageTitle',
             'totalTransaksi',
-            'totalHariIni',
+            'totalTanggal',
             'totalBulanIni',
             'totalTransaksiBulanIni',
             'totalPelunasanBulanIni',
@@ -85,12 +106,17 @@ class HomeController extends Controller
             'labaRugiBulanIni',
             'selectedMonth',
             'selectedMonthLabel',
+            'selectedDate',
+            'selectedDateLabel',
+            'totalTransaksiTanggal',
             'weeklyIncome',
             'weeklyExpense',
             'latestTransaksi',
             'stokMenipis',
             'totalStokMenipis',
-            'deadlineAlerts'
+            'deadlineAlerts',
+            'transaksiPerTanggal',
+            'transaksiPerBulan'
         ));
     }
 
@@ -108,26 +134,43 @@ class HomeController extends Controller
         return [$start, $end, $period->format('Y-m'), $period->isoFormat('MMMM Y')];
     }
 
+    private function resolveDate(?string $dateParam): array
+    {
+        try {
+            $date = Carbon::parse($dateParam)->startOfDay();
+        } catch (\Throwable) {
+            $date = now()->startOfDay();
+        }
+
+        return [$date, $date->format('d/m/Y'), $date->format('Y-m')];
+    }
+
     private function weeklyBreakdown(Carbon $start, Carbon $end): array
     {
         $weeksIncome  = array_fill(1, 5, 0);
         $weeksExpense = array_fill(1, 5, 0);
 
-        $rows = Transaksi::selectRaw('DATE(created_at) as tanggal, jenis_transaksi, SUM(total_harga) as total')
+        $incomeRows = Transaksi::selectRaw('DATE(created_at) as tanggal, SUM(total_harga) as total')
             ->whereBetween('created_at', [$start, $end])
-            ->whereIn('jenis_transaksi', ['pemasukan', 'pengeluaran'])
-            ->groupBy('tanggal', 'jenis_transaksi')
+            ->where('jenis_transaksi', 'pemasukan')
+            ->groupBy('tanggal')
             ->get();
 
-        foreach ($rows as $row) {
+        $expenseRows = StokMasuk::selectRaw('DATE(created_at) as tanggal, SUM(total_harga) as total')
+            ->whereBetween('created_at', [$start, $end])
+            ->groupBy('tanggal')
+            ->get();
+
+        foreach ($incomeRows as $row) {
             $date = Carbon::parse($row->tanggal);
             $weekIndex = min(intdiv($date->day - 1, 7) + 1, 5);
+            $weeksIncome[$weekIndex] += $row->total;
+        }
 
-            if ($row->jenis_transaksi === 'pemasukan') {
-                $weeksIncome[$weekIndex] += $row->total;
-            } else {
-                $weeksExpense[$weekIndex] += $row->total;
-            }
+        foreach ($expenseRows as $row) {
+            $date = Carbon::parse($row->tanggal);
+            $weekIndex = min(intdiv($date->day - 1, 7) + 1, 5);
+            $weeksExpense[$weekIndex] += $row->total;
         }
 
         return [$weeksIncome, $weeksExpense];

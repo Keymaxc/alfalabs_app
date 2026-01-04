@@ -4,6 +4,7 @@ use App\Http\Controllers\KategoriProdukController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\PengerjaanTransaksiController;
 use App\Http\Controllers\LaporanKeuanganController;
+use App\Http\Controllers\ForecastController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -11,7 +12,9 @@ Route::get('/', function () {
     return view('auth/login');
 });
 
-Auth::routes();
+Auth::routes([
+    'register' => false,
+]);
 
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
@@ -56,6 +59,10 @@ Route::middleware('auth')->group(function () {
             ->name('transaksi.export.pdf');
         Route::get('/transaksi/export/pdf/stok-masuk', [TransaksiController::class, 'exportStokMasukPdf'])
             ->name('transaksi.stok-masuk.export.pdf');
+
+        // Forecast & rekomendasi stok
+        Route::get('/forecast', [ForecastController::class, 'index'])
+            ->name('forecast.index');
     });
 
     Route::middleware('role:admin,staff')->group(function () {

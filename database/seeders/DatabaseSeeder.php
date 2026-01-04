@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Database\Seeders\DummyDataSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -22,5 +23,11 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
             'role' => 'superadmin',
         ]);
+
+        if (app()->environment(['local', 'development', 'testing'])) {
+            $this->call([
+                DummyDataSeeder::class,
+            ]);
+        }
     }
 }

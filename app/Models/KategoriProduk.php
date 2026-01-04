@@ -16,6 +16,8 @@ class KategoriProduk extends Model
         'harga',
         'stok',
         'stok_minimum',
+        'lead_time_days',
+        'minimum_order_qty',
     ];
 
     protected $attributes = [

@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendCustomerChat;
+use App\Models\CustomerMessage;
 use App\Models\PengerjaanTransaksi;
 use App\Models\Transaksi;
 use Illuminate\Http\Request;
 
 class PengerjaanTransaksiController extends Controller
 {
-    // 🔹 Halaman 1: Pengerjaan Berjalan (menunggu + proses)
     public function indexBerjalan(Request $request)
     {
         $pageTitle    = 'Order Berjalan';
@@ -22,10 +23,10 @@ class PengerjaanTransaksiController extends Controller
         if ($search) {
             $query->whereHas('transaksi', function ($q) use ($search) {
                 $q->where('nomor_transaksi', 'like', "%{$search}%")
-                  ->orWhere('nama_pelanggan', 'like', "%{$search}%")
-                  ->orWhereHas('kategoriProduk', function ($qq) use ($search) {
-                      $qq->where('nama_kategori', 'like', "%{$search}%");
-                  });
+                    ->orWhere('nama_pelanggan', 'like', "%{$search}%")
+                    ->orWhereHas('kategoriProduk', function ($qq) use ($search) {
+                        $qq->where('nama_kategori', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -38,7 +39,6 @@ class PengerjaanTransaksiController extends Controller
             'status' => $statusFilter,
         ]);
 
-        // ⬅️ PERHATIKAN: ganti ke 'pengerjaan.berjalan'
         return view('pengerjaan.berjalan', compact(
             'pageTitle',
             'pengerjaans',
@@ -47,7 +47,6 @@ class PengerjaanTransaksiController extends Controller
         ));
     }
 
-    // 🔹 Halaman 2: Pengerjaan Selesai (selesai + diambil)
     public function indexSelesai(Request $request)
     {
         $pageTitle    = 'Order Selesai';
@@ -61,10 +60,10 @@ class PengerjaanTransaksiController extends Controller
         if ($search) {
             $query->whereHas('transaksi', function ($q) use ($search) {
                 $q->where('nomor_transaksi', 'like', "%{$search}%")
-                  ->orWhere('nama_pelanggan', 'like', "%{$search}%")
-                  ->orWhereHas('kategoriProduk', function ($qq) use ($search) {
-                      $qq->where('nama_kategori', 'like', "%{$search}%");
-                  });
+                    ->orWhere('nama_pelanggan', 'like', "%{$search}%")
+                    ->orWhereHas('kategoriProduk', function ($qq) use ($search) {
+                        $qq->where('nama_kategori', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -84,16 +83,15 @@ class PengerjaanTransaksiController extends Controller
         if ($search) {
             $diambilList->whereHas('transaksi', function ($q) use ($search) {
                 $q->where('nomor_transaksi', 'like', "%{$search}%")
-                  ->orWhere('nama_pelanggan', 'like', "%{$search}%")
-                  ->orWhereHas('kategoriProduk', function ($qq) use ($search) {
-                      $qq->where('nama_kategori', 'like', "%{$search}%");
-                  });
+                    ->orWhere('nama_pelanggan', 'like', "%{$search}%")
+                    ->orWhereHas('kategoriProduk', function ($qq) use ($search) {
+                        $qq->where('nama_kategori', 'like', "%{$search}%");
+                    });
             });
         }
 
         $diambilList = $diambilList->get();
 
-        // ⬅️ PERHATIKAN: ganti ke 'pengerjaan.selesai'
         return view('pengerjaan.selesai', compact(
             'pageTitle',
             'pengerjaans',
@@ -103,7 +101,6 @@ class PengerjaanTransaksiController extends Controller
         ));
     }
 
-    // 🔹 Update status pengerjaan
     public function update(Request $request, PengerjaanTransaksi $pengerjaan)
     {
         $pengerjaan->loadMissing('transaksi');
@@ -123,10 +120,28 @@ class PengerjaanTransaksiController extends Controller
 
         $pengerjaan->update($validated);
 
+        // Kirim chat update status ke pelanggan
+        $transaksi = $pengerjaan->transaksi;
+        $phone = $transaksi?->kontak_pelanggan;
+        if ($phone) {
+            $statusLabel = strtoupper($validated['status']);
+            $message = "Halo {$transaksi->nama_pelanggan}, status pesanan {$transaksi->nomor_transaksi} sekarang: {$statusLabel}.";
+            if (!empty($validated['catatan'])) {
+                $message .= " Catatan: {$validated['catatan']}";
+            }
+
+            $msg = CustomerMessage::create([
+                'transaksi_id' => $transaksi->id,
+                'phone'        => $phone,
+                'message'      => $message,
+                'status'       => 'pending',
+            ]);
+            SendCustomerChat::dispatch($msg);
+        }
+
         return back()->with('success', 'Status pengerjaan berhasil diperbarui!');
     }
 
-    // 🔹 Pelunasan transaksi
     public function pelunasan(Request $request, Transaksi $transaksi)
     {
         $validated = $request->validate([
